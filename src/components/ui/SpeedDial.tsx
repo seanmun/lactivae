@@ -1,10 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { css } from "../../../styled-system/css";
+import ChatWidget from "./ChatWidget";
 
 export default function SpeedDial() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [fontSize, setFontSize] = useState<"normal" | "large">("normal");
+  const router = useRouter();
+
+  const handleAccessibility = () => {
+    const newSize = fontSize === "normal" ? "large" : "normal";
+    setFontSize(newSize);
+    document.documentElement.style.fontSize = newSize === "large" ? "120%" : "100%";
+    setIsOpen(false);
+  };
+
+  const handleChat = () => {
+    setIsChatOpen(true);
+    setIsOpen(false);
+  };
+
+  const handleSubscribe = () => {
+    router.push("/register");
+    setIsOpen(false);
+  };
 
   const actions = [
     {
@@ -14,7 +36,7 @@ export default function SpeedDial() {
         </svg>
       ),
       label: "Accessibility",
-      onClick: () => console.log("Accessibility clicked"),
+      onClick: handleAccessibility,
     },
     {
       icon: (
@@ -23,7 +45,7 @@ export default function SpeedDial() {
         </svg>
       ),
       label: "Chat",
-      onClick: () => console.log("Chat clicked"),
+      onClick: handleChat,
     },
     {
       icon: (
@@ -33,7 +55,7 @@ export default function SpeedDial() {
         </svg>
       ),
       label: "Subscribe",
-      onClick: () => console.log("Subscribe clicked"),
+      onClick: handleSubscribe,
     },
   ];
 
@@ -171,6 +193,9 @@ export default function SpeedDial() {
           }
         }
       `}</style>
+
+      {/* Chat Widget */}
+      <ChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 }
