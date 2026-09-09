@@ -1,5 +1,6 @@
 import { css } from "../../../styled-system/css";
 import Link from "next/link";
+import Ref from "@/components/ui/Ref";
 
 export const metadata = {
   title: "For Healthcare Providers - LACTIVAE™ Professional Resources",
@@ -128,7 +129,7 @@ export default function ProvidersPage() {
               })}
             >
               <strong>Traditional Position:</strong> The American Academy of Pediatrics, FDA, and CDC recommend
-              against raw milk consumption due to potential pathogen contamination.
+              against raw milk consumption due to potential pathogen contamination.<Ref k={["fda-raw-milk", "cdc-raw-milk"]} />
             </p>
             <p
               className={css({
@@ -138,10 +139,13 @@ export default function ProvidersPage() {
                 lineHeight: "1.6",
               })}
             >
-              <strong>Recent Evidence (2024):</strong> A comprehensive study in the <em>Journal of Epidemiology and Global Health</em> analyzing
-              16 years of data (2005-2020) found that outbreak rates decreased 74% as production protocols improved, with many states
-              reporting zero hospitalizations. The study concluded: <em>"The available evidence conflicts with assumptions of zero risk
-              for pasteurized milk and increasing trends in the burden of illness for raw milk."</em>
+              <strong>Recent Evidence (2024):</strong> A study in the <em>Journal of Epidemiology and Global Health</em> analyzing
+              16 years of CDC surveillance data (2005–2020) found that hospitalizations from raw milk were typically zero, with a
+              maximum of 10 in any year nationally, and that pasteurized dairy accounted for more deaths than raw milk over the
+              period.<Ref k="stephenson-2024" /> A separate analysis of 2005–2016 outbreak data found the outbreak rate effectively
+              decreased 74% after adjusting for growth in consumption.<Ref k="whitehead-2018" /> The 2024 study concluded:{" "}
+              <em>"The available evidence conflicts with assumptions of zero risk for pasteurized milk and increasing trends in
+              the burden of illness for raw milk."</em><Ref k="stephenson-2024" />
             </p>
           </div>
 
@@ -172,7 +176,7 @@ export default function ProvidersPage() {
                 marginBottom: "1rem",
               })}
             >
-              Key findings from Stephenson et al. 2024 for informed patient discussions:
+              Key findings from recent surveillance analyses for informed patient discussions:<Ref k={["stephenson-2024", "whitehead-2018"]} />
             </p>
             <ul
               className={css({
@@ -187,11 +191,12 @@ export default function ProvidersPage() {
                 },
               })}
             >
-              <li>Raw milk: 0-2 deaths over 16 years vs. pasteurized dairy: 5 deaths (same period)</li>
-              <li>California retail sales: Zero reported illnesses 2016-2020</li>
-              <li>40+ states: Zero hospitalizations from raw milk over 15-year period</li>
-              <li>Outbreak rates: 74% decrease since 2005 despite production growth</li>
-              <li>Comparative risk: Lower death rate than cantaloupe, leafy greens, peanut butter</li>
+              <li>Raw milk: 0–2 deaths over 16 years vs. pasteurized dairy: 5 deaths (same period)<Ref k="stephenson-2024" /></li>
+              <li>California retail sales: zero reported illnesses 2016–2020<Ref k="stephenson-2024" /></li>
+              <li>Hospitalizations from raw milk typically zero nationally; maximum of 10 in any single year<Ref k="stephenson-2024" /></li>
+              <li>Outbreak rates: 74% decrease from 2005 to 2016 after adjusting for growth in population and consumption<Ref k="whitehead-2018" /></li>
+              <li>Comparative risk: fewer deaths than cantaloupe (38), peanut butter (10), or leafy greens (6)<Ref k="stephenson-2024" /></li>
+              <li>In pasteurized-dairy outbreaks, <em>Listeria</em> was more often the agent and the proportions of hospitalizations and deaths were higher than in unpasteurized outbreaks<Ref k="sebastianski-2022" /></li>
             </ul>
             <p
               className={css({
@@ -203,7 +208,8 @@ export default function ProvidersPage() {
                 marginTop: "1rem",
               })}
             >
-              Source: Stephenson MM, et al. J Epidemiol Glob Health. 2024;14(3):787-816. DOI: 10.1007/s44197-024-00216-6
+              Sources: Stephenson MM, et al. J Epidemiol Glob Health. 2024;14(3):787-816.<Ref k="stephenson-2024" /> Whitehead J,
+              Lake B. PLoS Curr. 2018.<Ref k="whitehead-2018" /> Sebastianski M, et al. Can J Public Health. 2022;113(4):569-578.<Ref k="sebastianski-2022" />
             </p>
           </div>
         </section>
@@ -422,15 +428,26 @@ export default function ProvidersPage() {
               })}
             >
               <li>
-                <strong>Allergic disease:</strong> GABRIELA and PARSIFAL studies showed associations between raw milk
-                consumption and reduced asthma/allergic rhinitis (OR 0.58, 95% CI 0.48-0.71)
+                <strong>Allergic disease:</strong> The GABRIELA<Ref k="loss-2011" /> and PARSIFAL<Ref k="waser-2007" /> studies
+                found inverse associations between farm milk consumption and asthma and allergic rhinitis in children; a 2020
+                meta-analysis of eight studies pooled the asthma association at OR 0.58 (95% CI 0.49–0.69)<Ref k="brick-2020" />
               </li>
               <li>
-                <strong>Nutritional content:</strong> Higher levels of some heat-sensitive vitamins and native enzymes
-                compared to pasteurized milk
+                <strong>Respiratory infections:</strong> In the PASTURE birth cohort, raw milk consumption was associated with
+                about 30% fewer respiratory infections and fever episodes in the first year of life, and lower CRP at 12 months<Ref k="loss-2015" />
               </li>
               <li>
-                <strong>Fatty acid profile:</strong> Grass-fed raw milk shows 147% higher omega-3 content in some studies
+                <strong>Nutritional content:</strong> Modest reductions in B1, B2, C and folate with pasteurization; native
+                enzymes (alkaline phosphatase, lipase, lactoperoxidase), IgM and a substantial share of lactoferrin are lost;
+                minerals are unaffected<Ref k={["macdonald-2011", "claeys-2013", "haas-2025"]} />
+              </li>
+              <li>
+                <strong>Fatty acid profile:</strong> Grass-fed milk has roughly 2.5 times the omega-3 content of conventional
+                milk, an effect of feeding rather than of pasteurization<Ref k="benbrook-2018" />
+              </li>
+              <li>
+                <strong>Lactose intolerance:</strong> A randomized crossover pilot found no benefit of raw over pasteurized milk;
+                counsel patients that this common claim is not supported<Ref k="mummah-2014" />
               </li>
             </ul>
             <p

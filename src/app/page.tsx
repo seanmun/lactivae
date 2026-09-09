@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { css } from "../../styled-system/css";
+import Ref from "@/components/ui/Ref";
 
 export default function Home() {
   return (
@@ -131,7 +132,7 @@ export default function Home() {
                   color: "text.secondary",
                 })}
               >
-                Reduction in asthma risk
+                Lower odds of childhood asthma<Ref k="brick-2020" />
               </div>
             </div>
 
@@ -164,7 +165,7 @@ export default function Home() {
                   color: "text.secondary",
                 })}
               >
-                More omega-3 fatty acids
+                More omega-3 in grass-fed milk<Ref k="benbrook-2018" />
               </div>
             </div>
 
@@ -197,7 +198,7 @@ export default function Home() {
                   color: "text.secondary",
                 })}
               >
-                Reduction in allergy risk
+                Fewer respiratory infections in infants<Ref k="loss-2015" />
               </div>
             </div>
           </div>
@@ -326,7 +327,7 @@ export default function Home() {
                   color: "text.secondary",
                 })}
               >
-                Reduction in asthma risk
+                Lower odds of childhood asthma (meta-analysis, OR 0.58)<Ref k="brick-2020" />
               </div>
             </div>
 
@@ -363,7 +364,7 @@ export default function Home() {
                   color: "text.secondary",
                 })}
               >
-                More omega-3 fatty acids
+                More omega-3 in grass-fed versus conventional milk<Ref k="benbrook-2018" />
               </div>
             </div>
 
@@ -400,7 +401,7 @@ export default function Home() {
                   color: "text.secondary",
                 })}
               >
-                Lifespan extension (C. elegans)
+                Longer maximum lifespan in <em>C. elegans</em> given raw-milk cheese extract<Ref k="cardin-2021" />
               </div>
             </div>
           </div>
@@ -435,7 +436,9 @@ export default function Home() {
               margin: "0 auto 3rem",
             })}
           >
-            Comprehensive nutritional comparison showing key differences in bioavailable nutrients
+            Selected nutrients, LACTIVAE™ versus conventional store milk. Fatty-acid rows reflect grass-fed
+            versus conventional feeding, not pasteurization.<Ref k="benbrook-2018" /> Vitamin and bioactive rows
+            reflect heat treatment.<Ref k={["claeys-2013", "macdonald-2011", "peila-2016"]} />
           </p>
 
           <div
@@ -470,7 +473,7 @@ export default function Home() {
                   color: "accent.primary",
                 })}
               >
-                LACTIVAE™ (Raw)
+                LACTIVAE™ (grass-fed, raw)
               </h3>
             </div>
             <div
@@ -490,20 +493,20 @@ export default function Home() {
                   color: "text.muted",
                 })}
               >
-                Pasteurized Milk
+                Conventional pasteurized milk
               </h3>
             </div>
 
             {/* Comparison Rows */}
             {[
-              { nutrient: "Omega-3 Fatty Acids", rawValue: "183 mg", advantage: "+147%", pastValue: "74 mg" },
-              { nutrient: "Vitamin C", rawValue: "2.3 mg", advantage: "+135%", pastValue: "0.98 mg" },
-              { nutrient: "CLA", rawValue: "43 mg", advantage: "+162%", pastValue: "19 mg" },
-              { nutrient: "Vitamin E", rawValue: "0.15 mg", advantage: "+125%", pastValue: "0.067 mg" },
-              { nutrient: "Folate (B9)", rawValue: "13 mcg", advantage: "+118%", pastValue: "5.9 mcg" },
-              { nutrient: "Vitamin B12", rawValue: "1.1 mcg", advantage: "+110%", pastValue: "0.52 mcg" },
-              { nutrient: "Lactase Enzyme", rawValue: "Active", advantage: "Native", pastValue: "Denatured" },
-              { nutrient: "Beneficial Bacteria", rawValue: "10³-10⁴ CFU/ml", advantage: "Live", pastValue: "None" },
+              { nutrient: "Omega-3 fatty acids (per 100 g)", refs: "benbrook-2018", rawValue: "49 mg", advantage: "+147%", pastValue: "20 mg" },
+              { nutrient: "CLA (per 100 g)", refs: "benbrook-2018", rawValue: "43 mg", advantage: "+126%", pastValue: "19 mg" },
+              { nutrient: "Vitamin C (per 8 oz)", refs: ["claeys-2013", "macdonald-2011"], rawValue: "2.3 mg", advantage: "+35%", pastValue: "1.7 mg" },
+              { nutrient: "Folate (B9) (per 8 oz)", refs: ["claeys-2013", "macdonald-2011"], rawValue: "12 mcg", advantage: "+20%", pastValue: "10 mcg" },
+              { nutrient: "Vitamin B12 (per 8 oz)", refs: ["claeys-2013", "macdonald-2011"], rawValue: "1.1 mcg", advantage: "+10%", pastValue: "1.0 mcg" },
+              { nutrient: "Alkaline phosphatase", refs: "claeys-2013", rawValue: "Active", advantage: "Native", pastValue: "Inactivated" },
+              { nutrient: "Lactoferrin", refs: ["peila-2016", "haas-2025"], rawValue: "Intact", advantage: "Native", pastValue: "35–65% lower" },
+              { nutrient: "Live lactic acid bacteria", refs: ["claeys-2013", "butler-2020"], rawValue: "Present", advantage: "Live", pastValue: "Eliminated" },
             ].map((item, index) => (
               <>
                 {/* Raw Milk Side */}
@@ -532,6 +535,7 @@ export default function Home() {
                     })}
                   >
                     {item.nutrient}
+                    <Ref k={item.refs} />
                   </div>
                   <div
                     className={css({
@@ -794,7 +798,7 @@ export default function Home() {
                     border: "1px solid rgba(255, 255, 255, 0.2)",
                   })}
                 >
-                  LACTIVAE2025
+                  LACTIVAE2026
                 </div>
               </div>
 
@@ -891,7 +895,7 @@ export default function Home() {
           >
             LACTIVAE™ (raw milk, oral solution) is not FDA approved. Raw milk may contain harmful
             bacteria including <em>Campylobacter</em>, <em>Salmonella</em>, <em>E. coli O157:H7</em>,
-            and <em>Listeria monocytogenes</em>.
+            and <em>Listeria monocytogenes</em>.<Ref k="fda-raw-milk" />
           </p>
           <p
             className={css({
@@ -903,7 +907,7 @@ export default function Home() {
             })}
           >
             <strong>Not recommended for:</strong> Children under 5, adults over 65, pregnant women,
-            or immunocompromised individuals.
+            or immunocompromised individuals.<Ref k="fda-raw-milk" />
           </p>
           <Link
             href="#isi"

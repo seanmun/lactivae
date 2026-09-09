@@ -3,6 +3,7 @@
 import { css } from "../../../styled-system/css";
 import Link from "next/link";
 import { useState } from "react";
+import Ref from "@/components/ui/Ref";
 
 export default function NutritionalDataPage() {
   const [activeComparison, setActiveComparison] = useState<"pasteurized" | "supplements">("pasteurized");
@@ -107,7 +108,9 @@ export default function NutritionalDataPage() {
               marginBottom: "2rem",
             })}
           >
-            Per 8 oz (240ml) serving of grass-fed LACTIVAE™ (raw milk, oral solution)
+            Per 8 oz (240 mL) serving of grass-fed LACTIVAE™ (raw milk, oral solution). Values are for unfortified
+            whole cow&rsquo;s milk.<Ref k="usda-fdc" /> Raw milk is not fortified with vitamin D, so the vitamin D
+            content is far below that of store milk.<Ref k="usda-fdc" />
           </p>
 
           {/* Vitamins Table */}
@@ -164,10 +167,10 @@ export default function NutritionalDataPage() {
                   <td>Vision, immune function, skin health</td>
                 </tr>
                 <tr>
-                  <td><strong>Vitamin D3 (Cholecalciferol)</strong></td>
-                  <td>124 IU (3.1 mcg)</td>
-                  <td>16%</td>
-                  <td>Bone health, immune modulation, mood</td>
+                  <td><strong>Vitamin D3 (Cholecalciferol)</strong><Ref k="usda-fdc" /></td>
+                  <td>~5 IU (0.1 mcg)</td>
+                  <td>&lt;1%</td>
+                  <td>Bone health, immune modulation. Unfortified; store milk is fortified to ~100 IU per serving</td>
                 </tr>
                 <tr>
                   <td><strong>Vitamin E (Tocopherol)</strong></td>
@@ -182,7 +185,7 @@ export default function NutritionalDataPage() {
                   <td>Bone mineralization, cardiovascular health</td>
                 </tr>
                 <tr>
-                  <td><strong>Vitamin C (Ascorbic Acid)</strong></td>
+                  <td><strong>Vitamin C (Ascorbic Acid)</strong><Ref k="claeys-2013" /></td>
                   <td>2.3 mg</td>
                   <td>3%</td>
                   <td>Immune function, collagen synthesis</td>
@@ -479,64 +482,70 @@ export default function NutritionalDataPage() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td><strong>Vitamin C</strong></td>
+                      <td><strong>Vitamin C</strong><Ref k={["claeys-2013", "macdonald-2011"]} /></td>
                       <td>2.3 mg</td>
                       <td>1.7 mg</td>
                       <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+35% ↑</td>
                     </tr>
                     <tr>
-                      <td><strong>Vitamin B12</strong></td>
+                      <td><strong>Vitamin B12</strong><Ref k={["claeys-2013", "macdonald-2011"]} /></td>
                       <td>1.1 mcg</td>
                       <td>1.0 mcg</td>
                       <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+10% ↑</td>
                     </tr>
                     <tr>
-                      <td><strong>Folate</strong></td>
+                      <td><strong>Folate</strong><Ref k={["claeys-2013", "macdonald-2011"]} /></td>
                       <td>12 mcg</td>
                       <td>10 mcg</td>
                       <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+20% ↑</td>
                     </tr>
                     <tr>
-                      <td><strong>Omega-3 Fatty Acids</strong></td>
-                      <td>183 mg</td>
-                      <td>74 mg</td>
+                      <td><strong>Omega-3 Fatty Acids</strong> (grass-fed vs conventional, per 100 g)<Ref k="benbrook-2018" /></td>
+                      <td>49 mg</td>
+                      <td>20 mg</td>
                       <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+147% ↑</td>
                     </tr>
                     <tr>
-                      <td><strong>CLA (Conjugated Linoleic Acid)</strong></td>
-                      <td>136 mg</td>
-                      <td>84 mg</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+62% ↑</td>
+                      <td><strong>CLA (Conjugated Linoleic Acid)</strong> (grass-fed vs conventional, per 100 g)<Ref k="benbrook-2018" /></td>
+                      <td>43 mg</td>
+                      <td>19 mg</td>
+                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+126% ↑</td>
                     </tr>
                     <tr>
-                      <td><strong>Lactase Enzyme</strong></td>
+                      <td><strong>Alkaline Phosphatase</strong><Ref k="claeys-2013" /></td>
                       <td>Active</td>
-                      <td>Denatured</td>
+                      <td>Inactivated</td>
                       <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
                     </tr>
                     <tr>
-                      <td><strong>Lipase Enzyme</strong></td>
-                      <td>Active</td>
-                      <td>Denatured</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Phosphatase Enzyme</strong></td>
+                      <td><strong>Lipase Enzyme</strong><Ref k="claeys-2013" /></td>
                       <td>Active</td>
                       <td>Destroyed</td>
                       <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
                     </tr>
                     <tr>
-                      <td><strong>Immunoglobulins (IgG)</strong></td>
-                      <td>0.67 mg/mL</td>
-                      <td>0.47 mg/mL</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+43% ↑</td>
+                      <td><strong>Lactoperoxidase System</strong><Ref k="claeys-2013" /></td>
+                      <td>Active</td>
+                      <td>Destroyed</td>
+                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
                     </tr>
                     <tr>
-                      <td><strong>Lactoferrin</strong></td>
-                      <td>0.15 mg/mL</td>
-                      <td>0.08 mg/mL</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+88% ↑</td>
+                      <td><strong>Immunoglobulin G (IgG)</strong><Ref k={["claeys-2013", "peila-2016"]} /></td>
+                      <td>Native</td>
+                      <td>~99% retained (HTST)</td>
+                      <td className={css({ color: "text.muted", fontWeight: "600" })}>≈1% loss</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Immunoglobulin A (IgA)</strong><Ref k={["peila-2016", "haas-2025"]} /></td>
+                      <td>Native</td>
+                      <td>65–80% retained (HTST)</td>
+                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>20–35% loss</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Lactoferrin</strong><Ref k={["peila-2016", "haas-2025"]} /></td>
+                      <td>Native</td>
+                      <td>35–65% retained (HTST)</td>
+                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>35–65% loss</td>
                     </tr>
                   </tbody>
                 </table>
@@ -551,8 +560,12 @@ export default function NutritionalDataPage() {
                   marginTop: "1.5rem",
                 })}
               >
-                Source: Claeys WL, et al. "Raw or heated cow milk consumption: Review of risks and benefits."
-                Food Control. 2013;31(1):251-262.
+                Sources: Claeys WL, et al. "Raw or heated cow milk consumption: review of risks and benefits."
+                Food Control. 2013;31(1):251-262.<Ref k="claeys-2013" /> Macdonald LE, et al. J Food Prot.
+                2011;74(11):1814-1832.<Ref k="macdonald-2011" /> Peila C, et al. Nutrients. 2016;8(8):477.<Ref k="peila-2016" /> Haas
+                J, et al. J Dairy Sci. 2025;108(1):257-271.<Ref k="haas-2025" /> Fatty-acid rows: Benbrook CM, et al. Food Sci Nutr.
+                2018;6(3):681-700,<Ref k="benbrook-2018" /> which compares grass-fed with conventional feeding rather than raw with
+                pasteurized milk. Calcium and other minerals are not significantly affected by pasteurization.<Ref k="claeys-2013" />
               </p>
             </div>
           )}
@@ -741,7 +754,9 @@ export default function NutritionalDataPage() {
                     bioavailability
                   </li>
                   <li>
-                    <strong>Native enzymes:</strong> Lactase aids lactose digestion, lipase enhances fat absorption
+                    <strong>Native enzymes:</strong> Lipase, alkaline phosphatase and the lactoperoxidase system remain
+                    active in raw milk.<Ref k="claeys-2013" /> Raw milk contains negligible lactase; a randomized crossover
+                    trial found no improvement in lactose intolerance symptoms versus pasteurized milk.<Ref k="mummah-2014" />
                   </li>
                   <li>
                     <strong>Bioactive peptides:</strong> Released during digestion, provide additional immune and
@@ -759,8 +774,8 @@ export default function NutritionalDataPage() {
                   marginTop: "1.5rem",
                 })}
               >
-                Sources: Heaney RP, et al. "Bioavailability of calcium from dairy products." Am J Clin Nutr. 2000;72(5):1107-1109.
-                / Scholz-Ahrens KE, et al. "Nutritional and health attributes of milk and milk products." Eur J Nutr. 2011;50(5):309-320.
+                Sources: Heaney RP. "Calcium, dairy products and osteoporosis." J Am Coll Nutr. 2000;19(2 Suppl):83S-99S.<Ref k="heaney-2000" />{" "}
+                Scholz-Ahrens KE, et al. "Nutritional and health attributes of milk and milk imitations." Eur J Nutr. 2020;59(1):19-34.<Ref k="scholz-ahrens-2020" />
               </p>
             </div>
           )}

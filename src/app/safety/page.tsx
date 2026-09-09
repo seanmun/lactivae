@@ -1,5 +1,6 @@
 import { css } from "../../../styled-system/css";
 import Link from "next/link";
+import Ref from "@/components/ui/Ref";
 
 export const metadata = {
   title: "Safety Information - LACTIVAE™ (raw milk, oral solution)",
@@ -90,8 +91,9 @@ export default function SafetyPage() {
                 marginBottom: "1.5rem",
               })}
             >
-              Recent peer-reviewed research challenges common perceptions about raw milk safety. A comprehensive 2024 study
-              published in the <em>Journal of Epidemiology and Global Health</em> analyzed 16 years of data (2005-2020) and found:
+              Recent peer-reviewed research challenges common perceptions about raw milk safety. A 2024 study published in the{" "}
+              <em>Journal of Epidemiology and Global Health</em> analyzed 16 years of CDC surveillance data (2005–2020),<Ref k="stephenson-2024" />{" "}
+              and an earlier analysis examined outbreak trends against legalization and consumption growth (2005–2016):<Ref k="whitehead-2018" />
             </p>
 
             <div
@@ -104,20 +106,24 @@ export default function SafetyPage() {
             >
               {[
                 {
-                  stat: "0-2 deaths",
+                  stat: "0–2 deaths",
+                  ref: "stephenson-2024",
                   description: "Total deaths from raw milk in 16 years (vs. 5 deaths from pasteurized dairy)",
                 },
                 {
                   stat: "74% decrease",
-                  description: "In outbreak rates since 2005, despite production growth",
+                  ref: "whitehead-2018",
+                  description: "In outbreak rates from 2005 to 2016, after adjusting for growth in population and consumption",
                 },
                 {
                   stat: "Zero illnesses",
-                  description: "Reported in California (2016-2020) despite retail grocery store sales",
+                  ref: "stephenson-2024",
+                  description: "Reported in California (2016–2020) despite retail grocery store sales",
                 },
                 {
-                  stat: "40+ states",
-                  description: "Reported zero hospitalizations from raw milk over 15 years",
+                  stat: "0 typical, 10 max",
+                  ref: "stephenson-2024",
+                  description: "Hospitalizations from raw milk per year nationally: typically zero, never more than 10",
                 },
               ].map((item) => (
                 <div
@@ -140,6 +146,7 @@ export default function SafetyPage() {
                     })}
                   >
                     {item.stat}
+                    <Ref k={item.ref} />
                   </h3>
                   <p
                     className={css({
@@ -164,8 +171,8 @@ export default function SafetyPage() {
                 fontStyle: "italic",
               })}
             >
-              Source: Stephenson et al. 2024, <em>Journal of Epidemiology and Global Health</em>.
-              DOI: 10.1007/s44197-024-00216-6
+              Sources: Stephenson MM, et al. <em>J Epidemiol Glob Health</em>. 2024;14(3):787-816.<Ref k="stephenson-2024" />{" "}
+              Whitehead J, Lake B. <em>PLoS Curr</em>. 2018.<Ref k="whitehead-2018" />
             </p>
           </div>
 
@@ -196,7 +203,7 @@ export default function SafetyPage() {
                 marginBottom: "1rem",
               })}
             >
-              Deaths from foodborne illness (2005-2020):
+              Deaths by food, CDC outbreak surveillance 2005–2020:<Ref k="stephenson-2024" />
             </p>
             <ul
               className={css({
@@ -252,7 +259,7 @@ export default function SafetyPage() {
             })}
           >
             <strong>LACTIVAE™ is NOT FDA approved.</strong> The U.S. Food and Drug Administration states that raw milk
-            can harbor dangerous microorganisms that can pose serious health risks.
+            can harbor dangerous microorganisms that can pose serious health risks.<Ref k="fda-raw-milk" />
           </p>
           <p
             className={css({
@@ -263,7 +270,7 @@ export default function SafetyPage() {
             })}
           >
             However, the 2024 peer-reviewed study concluded: <em>"The available evidence conflicts with assumptions of
-            zero risk for pasteurized milk and increasing trends in the burden of illness for raw milk."</em>
+            zero risk for pasteurized milk and increasing trends in the burden of illness for raw milk."</em><Ref k="stephenson-2024" />
           </p>
         </section>
 
@@ -282,7 +289,7 @@ export default function SafetyPage() {
               marginBottom: "2rem",
             })}
           >
-            WHO SHOULD NOT CONSUME LACTIVAE™
+            WHO SHOULD NOT CONSUME LACTIVAE™<Ref k="fda-raw-milk" />
           </h2>
 
           <div

@@ -146,7 +146,14 @@ export default function AboutPage() {
                 })}
               >
                 All information presented on this site is backed by peer-reviewed scientific research.
-                We cite our sources and provide links to original studies.
+                Every numbered claim links to a verified entry in our{" "}
+                <Link
+                  href="/references"
+                  className={css({ color: "accent.secondary", textDecoration: "underline", _hover: { color: "accent.warm" } })}
+                >
+                  reference library
+                </Link>
+                , with DOI, PubMed, and full-text links where the source is open access.
               </p>
             </div>
 

@@ -127,6 +127,18 @@ export default function Footer() {
               >
                 Clinical Data
               </Link>
+              <Link
+                href="/references"
+                className={css({
+                  fontFamily: "body",
+                  fontSize: "sm",
+                  color: "text.muted",
+                  textDecoration: "none",
+                  _hover: { color: "accent.secondary" },
+                })}
+              >
+                References
+              </Link>
             </div>
           </div>
 
