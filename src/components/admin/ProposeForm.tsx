@@ -9,6 +9,7 @@ import { references, referenceNumber, shortCitation, getReference } from "@/data
 import { blastRadius } from "@/lib/blast";
 import TextDiff from "./TextDiff";
 import BlastPanel from "./BlastPanel";
+import VerifyPanel from "./VerifyPanel";
 
 const label = css({ display: "block", fontFamily: "body", fontSize: "sm", fontWeight: "600", color: "accent.primary", marginBottom: "0.4rem" });
 const input = css({
@@ -198,6 +199,18 @@ export default function ProposeForm({ claimId, aiAvailable }: { claimId: string;
             Rationale for reviewers
           </label>
           <textarea id="rationale" className={input} rows={3} value={rationale} onChange={(e) => setRationale(e.target.value)} placeholder="Why this wording, and why it is still supported" />
+        </div>
+
+        <div className={section}>
+          <div className={h}>Evidence check</div>
+          <VerifyPanel
+            claimId={claimId}
+            text={text}
+            refs={refs.map((r) => r.key)}
+            onUseQuote={(ref, page, q) =>
+              setRefs(refs.map((x) => (x.key === ref ? { ...x, locator: /^\d+$/.test(page) ? `p. ${page}` : page, quote: q } : x)))
+            }
+          />
         </div>
 
         <div className={css({ ...{}, padding: "1rem 1.25rem", bg: "bg.tertiary", border: "1px dashed", borderColor: "border.medium", borderRadius: "8px", marginBottom: "1.5rem" })}>

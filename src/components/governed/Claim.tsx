@@ -29,6 +29,8 @@ interface ClaimProps {
   /** stat variant only */
   headlineClassName?: string;
   textClassName?: string;
+  /** stat variant: element for the headline number (e.g. "h3" when the page uses headings) */
+  headlineAs?: ElementType;
   showRefs?: boolean;
 }
 
@@ -43,6 +45,7 @@ export default function Claim({
   className,
   headlineClassName,
   textClassName,
+  headlineAs,
   showRefs = true,
 }: ClaimProps) {
   const claim = getClaim(id);
@@ -53,9 +56,10 @@ export default function Claim({
   // data-claim-text marks the swappable copy so the admin-only staging overlay
   // can preview a proposed version in place without touching the markers.
   if (variant === "stat") {
+    const Headline: ElementType = headlineAs ?? "div";
     return (
       <div {...governedAttrs(claim)} className={className}>
-        {claim.headline && <div className={headlineClassName}>{claim.headline}</div>}
+        {claim.headline && <Headline className={headlineClassName}>{claim.headline}</Headline>}
         <div className={textClassName}>
           <span data-claim-text>{renderInline(claim.text)}</span>
           {markers}

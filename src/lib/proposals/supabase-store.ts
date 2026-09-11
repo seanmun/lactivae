@@ -21,6 +21,10 @@ interface ProposalRow {
   proposed_safety: string[];
   rationale: string | null;
   ai_assisted: boolean;
+  is_new: boolean | null;
+  proposed_type: string | null;
+  proposed_label: string | null;
+  source_ref: string | null;
   status: ProposalStatus;
   author: string;
   reviewed_by: string | null;
@@ -50,6 +54,10 @@ function toProposal(r: ProposalRow): Proposal {
     proposedSafety: r.proposed_safety ?? [],
     rationale: r.rationale,
     aiAssisted: r.ai_assisted,
+    isNew: r.is_new ?? false,
+    proposedType: r.proposed_type,
+    proposedLabel: r.proposed_label,
+    sourceRef: r.source_ref,
     status: r.status,
     author: r.author,
     reviewedBy: r.reviewed_by,
@@ -109,6 +117,10 @@ export class SupabaseProposalStore implements ProposalStore {
         proposed_safety: input.proposedSafety,
         rationale: input.rationale ?? null,
         ai_assisted: input.aiAssisted ?? false,
+        is_new: input.isNew ?? false,
+        proposed_type: input.proposedType ?? null,
+        proposed_label: input.proposedLabel ?? null,
+        source_ref: input.sourceRef ?? null,
         author: actor.userId,
       })
       .select("*")

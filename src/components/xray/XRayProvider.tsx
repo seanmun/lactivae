@@ -56,6 +56,11 @@ function XRayShell({ session }: { session: Session }) {
   // components (video backgrounds, animations) react to X-ray being on.
   useEffect(() => {
     const body = document.body;
+    // Visitor widgets step aside while X-ray is on. Set directly rather than
+    // relying on the CSS cascade alone, so it holds in every mode and page.
+    document.querySelectorAll<HTMLElement>("[data-speed-dial]").forEach((el) => {
+      el.style.visibility = mode === "off" ? "" : "hidden";
+    });
     if (mode === "off") {
       delete body.dataset.xray;
       delete body.dataset.xrayHasSelection;

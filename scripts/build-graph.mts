@@ -11,6 +11,7 @@
  *   <Safety id="safety-id" …/>        safety usage
  *   claimId="claim-id"                claim usage via a governed wrapper component
  *   <Ref k="key"/> or k={["a","b"]}   loose reference marker (outside a Claim)
+ *   <Cite k="key"/>                   governed citation line (bibliography, not a claim)
  *   safetyByGroup("group")            every safety object in that group (ISI lists)
  *   data-component="name"             component boundary; usages attach to the
  *                                     most recent boundary above them in the file
@@ -78,7 +79,7 @@ for (const s of safetyObjects) {
 
 // ------------------------------------------------------------------- sources
 interface Usage {
-  kind: "claim" | "safety" | "ref";
+  kind: "claim" | "safety" | "ref" | "cite";
   id: string;
   component: string;
   order: number;
@@ -95,7 +96,7 @@ function routeFor(file: string): { route: string; label: string } | null {
 }
 
 const TOKEN =
-  /<Claim\b[^>]*?\bid="([^"]+)"|<Safety\b[^>]*?\bid="([^"]+)"|\bclaimId="([^"]+)"|<Ref\b[^>]*?\bk=(?:"([^"]+)"|\{\s*\[([^\]]*)\]\s*\})|data-component="([^"]+)"|safetyByGroup\("([^"]+)"\)/g;
+  /<Claim\b[^>]*?\bid="([^"]+)"|<Safety\b[^>]*?\bid="([^"]+)"|\bclaimId="([^"]+)"|<Ref\b[^>]*?\bk=(?:"([^"]+)"|\{\s*\[([^\]]*)\]\s*\})|data-component="([^"]+)"|safetyByGroup\("([^"]+)"\)|<Cite\b[^>]*?\bk="([^"]+)"/g;
 
 const files = [
   ...globSync("src/app/**/page.tsx", { cwd: ROOT }),
@@ -121,7 +122,7 @@ for (const file of files) {
   const usages: Usage[] = [];
 
   for (const m of src.matchAll(TOKEN)) {
-    const [, claimId, safetyId, claimIdProp, refKey, refList, componentName, safetyGroup] = m;
+    const [, claimId, safetyId, claimIdProp, refKey, refList, componentName, safetyGroup, citeKey] = m;
     if (componentName) {
       component = componentName;
       continue;
@@ -136,6 +137,7 @@ for (const file of files) {
         order += 1;
       }
     }
+    else if (citeKey) usages.push({ kind: "cite", id: citeKey, component, order });
     else if (refKey) usages.push({ kind: "ref", id: refKey, component, order });
     else if (refList !== undefined) {
       for (const k of refList.matchAll(/"([^"]+)"/g)) usages.push({ kind: "ref", id: k[1], component, order });
@@ -156,11 +158,11 @@ for (const file of files) {
     else if (u.kind === "safety") addEdge({ from: compId, to: `safety:${u.id}`, rel: "contains", order: u.order });
     else {
       addEdge({ from: compId, to: `ref:${u.id}`, rel: "cites", order: u.order });
-      loose += 1;
+      if (u.kind === "ref") loose += 1;
     }
   }
   looseRefsByPage[routeKey] = loose;
-  if (loose === 0 && usages.some((u) => u.kind !== "ref")) pagesConverted.push(routeKey);
+  if (loose === 0 && usages.some((u) => u.kind === "claim" || u.kind === "safety")) pagesConverted.push(routeKey);
 }
 
 // -------------------------------------------------------------------- checks

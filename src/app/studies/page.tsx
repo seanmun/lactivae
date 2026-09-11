@@ -1,6 +1,7 @@
 import { css } from "../../../styled-system/css";
 import Link from "next/link";
-import Ref from "@/components/ui/Ref";
+import Claim from "@/components/governed/Claim";
+import Cite from "@/components/governed/Cite";
 
 export const metadata = {
   title: "Clinical Studies - LACTIVAE™ Research Data",
@@ -83,6 +84,7 @@ export default function StudiesPage() {
       >
         {/* Key Findings Overview */}
         <section
+          data-component="key-findings"
           className={css({
             marginBottom: "4rem",
           })}
@@ -114,27 +116,23 @@ export default function StudiesPage() {
                 borderColor: "border.light",
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="studies-kf-asthma-42"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "4xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                42%
-              </div>
-              <p
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "base",
                   color: "text.secondary",
                   lineHeight: "1.6",
                 })}
-              >
-                Lower odds of asthma in children who consumed raw farm milk early in life (meta-analysis of 8 studies, OR 0.58)<Ref k="brick-2020" />
-              </p>
+              />
             </div>
 
             <div
@@ -146,27 +144,23 @@ export default function StudiesPage() {
                 borderColor: "border.light",
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="studies-kf-omega3-147"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "4xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                147%
-              </div>
-              <p
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "base",
                   color: "text.secondary",
                   lineHeight: "1.6",
                 })}
-              >
-                Higher total omega-3 content in grass-fed milk than in conventional milk (a feeding effect, not a pasteurization effect)<Ref k="benbrook-2018" />
-              </p>
+              />
             </div>
 
             <div
@@ -178,33 +172,30 @@ export default function StudiesPage() {
                 borderColor: "border.light",
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="studies-kf-lifespan-63"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "4xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                63%
-              </div>
-              <p
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "base",
                   color: "text.secondary",
                   lineHeight: "1.6",
                 })}
-              >
-                Longer maximum lifespan in <em>C. elegans</em> given freeze-dried raw-milk cheese (nematode model, not a human outcome)<Ref k="cardin-2021" />
-              </p>
+              />
             </div>
           </div>
         </section>
 
         {/* Respiratory Health */}
         <section
+          data-component="respiratory"
           className={css({
             marginBottom: "4rem",
           })}
@@ -249,8 +240,7 @@ export default function StudiesPage() {
                 marginBottom: "1rem",
               })}
             >
-              Cross-sectional study of 8,334 school-aged children in rural Germany, Austria and Switzerland, with milk
-              constituents measured directly in 800 household samples:<Ref k="loss-2011" />
+              <Claim id="gabriela-design" />
             </p>
             <ul
               className={css({
@@ -266,10 +256,10 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>41% lower odds of asthma with reported raw milk consumption (aOR 0.59, 95% CI 0.46–0.74)<Ref k="loss-2011" /></li>
-              <li>49% lower odds of hay fever (aOR 0.51, 95% CI 0.37–0.69) and 26% lower odds of atopy (aOR 0.74)<Ref k="loss-2011" /></li>
-              <li>Association held independent of other farm exposures; boiled farm milk showed no protective effect<Ref k="loss-2011" /></li>
-              <li>Higher levels of the heat-sensitive whey proteins BSA, α-lactalbumin and β-lactoglobulin in the milk were each inversely associated with asthma<Ref k="loss-2011" /></li>
+              <Claim id="gabriela-asthma-41" as="li" />
+              <Claim id="gabriela-hayfever-49" as="li" />
+              <Claim id="gabriela-independent" as="li" />
+              <Claim id="gabriela-whey" as="li" />
             </ul>
             <p
               className={css({
@@ -279,8 +269,7 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Loss G, et al. "The protective effect of farm milk consumption on childhood asthma and atopy: the GABRIELA study."
-              J Allergy Clin Immunol. 2011;128(4):766-773.e4.<Ref k="loss-2011" />
+              <Cite k="loss-2011" />
             </p>
           </div>
 
@@ -311,8 +300,7 @@ export default function StudiesPage() {
                 marginBottom: "1rem",
               })}
             >
-              Cross-sectional multi-centre study of 14,893 children aged 5–13 in five European countries, comparing
-              farm-produced with shop-purchased dairy:<Ref k="waser-2007" />
+              <Claim id="parsifal-design" />
             </p>
             <ul
               className={css({
@@ -328,9 +316,9 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>26% lower odds of asthma with farm milk consumption ever in life (aOR 0.74, 95% CI 0.61–0.88)<Ref k="waser-2007" /></li>
-              <li>44% lower odds of rhinoconjunctivitis (aOR 0.56, 95% CI 0.43–0.73) and lower odds of sensitization to pollen and common foods<Ref k="waser-2007" /></li>
-              <li>Observed in all four subpopulations and independent of other farm-related exposures; other farm-produced foods showed no independent association<Ref k="waser-2007" /></li>
+              <Claim id="parsifal-asthma-26" as="li" />
+              <Claim id="parsifal-rhino-44" as="li" />
+              <Claim id="parsifal-independent" as="li" />
             </ul>
             <p
               className={css({
@@ -340,8 +328,7 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Waser M, et al. "Inverse association of farm milk consumption with asthma and allergy in rural and suburban populations across Europe."
-              Clin Exp Allergy. 2007;37(5):661-670.<Ref k="waser-2007" />
+              <Cite k="waser-2007" />
             </p>
           </div>
 
@@ -373,8 +360,7 @@ export default function StudiesPage() {
                 marginBottom: "1rem",
               })}
             >
-              Prospective cohort of 983 rural infants in five European countries, followed with weekly health diaries
-              through the first year of life (37,306 person-weeks):<Ref k="loss-2015" />
+              <Claim id="pasture-design" />
             </p>
             <ul
               className={css({
@@ -390,10 +376,10 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>Versus ultra-heat-treated milk, raw milk consumption was inversely associated with rhinitis (aOR 0.71), respiratory tract infections (aOR 0.77), otitis (aOR 0.14) and fever (aOR 0.69)<Ref k="loss-2015" /></li>
-              <li>The authors summarize this as roughly 30% fewer manifest respiratory infections and fever episodes<Ref k="loss-2015" /></li>
-              <li>Lower C-reactive protein at 12 months (geometric mean ratio 0.66, 95% CI 0.45–0.98), consistent with a sustained anti-inflammatory effect<Ref k="loss-2015" /></li>
-              <li>Boiled farm milk showed similar but weaker associations<Ref k="loss-2015" /></li>
+              <Claim id="pasture-infections-or" as="li" />
+              <Claim id="pasture-30" as="li" />
+              <Claim id="pasture-crp" as="li" />
+              <Claim id="pasture-boiled" as="li" />
             </ul>
             <p
               className={css({
@@ -403,8 +389,7 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Loss G, et al. "Consumption of unprocessed cow's milk protects infants from common respiratory infections."
-              J Allergy Clin Immunol. 2015;135(1):56-62.<Ref k="loss-2015" />
+              <Cite k="loss-2015" />
             </p>
           </div>
 
@@ -436,7 +421,7 @@ export default function StudiesPage() {
                 marginBottom: "1rem",
               })}
             >
-              Pooled analysis of 8 studies (12 publications) on raw farm milk consumption between infancy and age five:<Ref k="brick-2020" />
+              <Claim id="meta-design" />
             </p>
             <ul
               className={css({
@@ -452,10 +437,10 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>42% lower odds of asthma (OR 0.58, 95% CI 0.49–0.69)<Ref k="brick-2020" /></li>
-              <li>Lower odds of current wheeze (OR 0.66), hay fever or allergic rhinitis (OR 0.68) and atopic sensitization (OR 0.76)<Ref k="brick-2020" /></li>
-              <li>The asthma association was present in children living in rural areas but not on farms (OR 0.60), suggesting it is independent of other farm exposures<Ref k="brick-2020" /></li>
-              <li>The authors nonetheless strongly discourage raw milk consumption because of the risk of life-threatening infection, and are testing microbiologically safe, minimally processed milk in the MARTHA trial<Ref k="brick-2020" /></li>
+              <Claim id="meta-asthma-42" as="li" />
+              <Claim id="meta-other-outcomes" as="li" />
+              <Claim id="meta-rural-independent" as="li" />
+              <Claim id="meta-discouraged" as="li" />
             </ul>
             <p
               className={css({
@@ -465,14 +450,14 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Brick T, et al. "The beneficial effect of farm milk consumption on asthma, allergies, and infections: from meta-analysis of evidence to clinical trial."
-              J Allergy Clin Immunol Pract. 2020;8(3):878-889.e3.<Ref k="brick-2020" />
+              <Cite k="brick-2020" />
             </p>
           </div>
         </section>
 
         {/* Nutritional Composition */}
         <section
+          data-component="composition"
           className={css({
             marginBottom: "4rem",
           })}
@@ -517,9 +502,7 @@ export default function StudiesPage() {
                 marginBottom: "1rem",
               })}
             >
-              US-wide analysis of 1,163 milk samples over three years comparing cows on a nearly 100% forage diet with
-              conventional and organic management. These differences come from what the cows ate, not from whether the
-              milk was pasteurized:<Ref k="benbrook-2018" />
+              <Claim id="benbrook-design" />
             </p>
             <ul
               className={css({
@@ -535,9 +518,9 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>147% higher total omega-3 content in grass-fed milk (0.049 vs 0.020 g/100 g)<Ref k="benbrook-2018" /></li>
-              <li>Omega-6 to omega-3 ratio of 0.95:1 in grass-fed milk versus 2.28:1 in organic and 5.77:1 in conventional milk<Ref k="benbrook-2018" /></li>
-              <li>126% higher conjugated linoleic acid (CLA) content (0.043 vs 0.019 g/100 g)<Ref k="benbrook-2018" /></li>
+              <Claim id="benbrook-omega3-147" as="li" />
+              <Claim id="benbrook-ratio" as="li" />
+              <Claim id="benbrook-cla-126" as="li" />
             </ul>
             <p
               className={css({
@@ -547,8 +530,7 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Benbrook CM, et al. "Enhancing the fatty acid profile of milk through forage-based rations, with nutrition modeling of diet outcomes."
-              Food Sci Nutr. 2018;6(3):681-700.<Ref k="benbrook-2018" />
+              <Cite k="benbrook-2018" />
             </p>
           </div>
 
@@ -595,11 +577,11 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>Vitamins B1, B2, C and folate significantly decreased; B6 unchanged; B12 and E decreased qualitatively. The reviewers judged the overall nutritional impact minimal because milk is not a major source of these vitamins (meta-analysis of 40 studies)<Ref k="macdonald-2011" /></li>
-              <li>No significant effect on calcium, phosphorus, iron, zinc or iodine content or bioavailability<Ref k="claeys-2013" /></li>
-              <li>Alkaline phosphatase completely inactivated (it is the regulatory marker of adequate pasteurization); lactoperoxidase system and lipase destroyed<Ref k="claeys-2013" /></li>
-              <li>IgG, the predominant bovine immunoglobulin, is largely heat-stable under HTST (about 1% denaturation); IgA reduced roughly 20–35%; IgM destroyed<Ref k={["claeys-2013", "peila-2016"]} /></li>
-              <li>Lactoferrin reduced 35–65% and IgA, IgM and enzyme activity significantly lower after commercial HTST processing<Ref k={["peila-2016", "haas-2025"]} /></li>
+              <Claim id="heat-vitamins" as="li" />
+              <Claim id="heat-minerals" as="li" />
+              <Claim id="heat-enzymes" as="li" />
+              <Claim id="heat-immunoglobulins" as="li" />
+              <Claim id="heat-lactoferrin" as="li" />
             </ul>
             <p
               className={css({
@@ -609,14 +591,14 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Claeys WL, et al. "Raw or heated cow milk consumption: review of risks and benefits."
-              Food Control. 2013;31(1):251-262.<Ref k="claeys-2013" /> Macdonald LE, et al. J Food Prot. 2011;74(11):1814-1832.<Ref k="macdonald-2011" /> Peila C, et al. Nutrients. 2016;8(8):477.<Ref k="peila-2016" /> Haas J, et al. J Dairy Sci. 2025;108(1):257-271.<Ref k="haas-2025" />
+              <Cite k="claeys-2013" /> <Cite k="macdonald-2011" short /> <Cite k="peila-2016" short /> <Cite k="haas-2025" short />
             </p>
           </div>
         </section>
 
         {/* Longevity Research */}
         <section
+          data-component="longevity"
           className={css({
             marginBottom: "4rem",
           })}
@@ -660,8 +642,7 @@ export default function StudiesPage() {
                 marginBottom: "1rem",
               })}
             >
-              Research using <em>Caenorhabditis elegans</em> (nematode worm) as a model organism, fed freeze-dried raw
-              goat-milk cheese and its chemical extracts:<Ref k="cardin-2021" />
+              <Claim id="celegans-design" />
             </p>
             <ul
               className={css({
@@ -677,10 +658,10 @@ export default function StudiesPage() {
                 },
               })}
             >
-              <li>63% increase in maximum lifespan with freeze-dried raw-milk cheese<Ref k="cardin-2021" /></li>
-              <li>Activation of the insulin-like DAF-2/DAF-16 (FOXO homolog) pathway, shown with mutant strains and nuclear translocation of DAF-16<Ref k="cardin-2021" /></li>
-              <li>Increased survival under oxidative stress with every extract tested<Ref k="cardin-2021" /></li>
-              <li>Cheese-lipid extract and the water-soluble extract W70 reduced reactive oxygen species production in human leukocytes by 23% and 28%<Ref k="cardin-2021" /></li>
+              <Claim id="celegans-63" as="li" />
+              <Claim id="celegans-daf16" as="li" />
+              <Claim id="celegans-oxidative" as="li" />
+              <Claim id="celegans-ros" as="li" />
             </ul>
             <p
               className={css({
@@ -702,8 +683,7 @@ export default function StudiesPage() {
                 fontStyle: "italic",
               })}
             >
-              Cardin G, et al. "A mechanistic study of the antiaging effect of raw-milk cheese extracts."
-              Nutrients. 2021;13(3):897.<Ref k="cardin-2021" />
+              <Cite k="cardin-2021" />
             </p>
           </div>
         </section>

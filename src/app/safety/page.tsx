@@ -1,6 +1,8 @@
 import { css } from "../../../styled-system/css";
 import Link from "next/link";
-import Ref from "@/components/ui/Ref";
+import Claim from "@/components/governed/Claim";
+import Cite from "@/components/governed/Cite";
+import Safety from "@/components/governed/Safety";
 
 export const metadata = {
   title: "Safety Information - LACTIVAE™ (raw milk, oral solution)",
@@ -58,6 +60,7 @@ export default function SafetyPage() {
       >
         {/* Modern Safety Evidence - Lead with positive data */}
         <section
+          data-component="safety-evidence"
           className={css({
             marginBottom: "4rem",
           })}
@@ -91,9 +94,7 @@ export default function SafetyPage() {
                 marginBottom: "1.5rem",
               })}
             >
-              Recent peer-reviewed research challenges common perceptions about raw milk safety. A 2024 study published in the{" "}
-              <em>Journal of Epidemiology and Global Health</em> analyzed 16 years of CDC surveillance data (2005–2020),<Ref k="stephenson-2024" />{" "}
-              and an earlier analysis examined outbreak trends against legalization and consumption growth (2005–2016):<Ref k="whitehead-2018" />
+              Recent peer-reviewed research challenges common perceptions about raw milk safety. <Claim id="safety-evidence-intro" />
             </p>
 
             <div
@@ -104,62 +105,10 @@ export default function SafetyPage() {
                 marginBottom: "1.5rem",
               })}
             >
-              {[
-                {
-                  stat: "0–2 deaths",
-                  ref: "stephenson-2024",
-                  description: "Total deaths from raw milk in 16 years (vs. 5 deaths from pasteurized dairy)",
-                },
-                {
-                  stat: "74% decrease",
-                  ref: "whitehead-2018",
-                  description: "In outbreak rates from 2005 to 2016, after adjusting for growth in population and consumption",
-                },
-                {
-                  stat: "Zero illnesses",
-                  ref: "stephenson-2024",
-                  description: "Reported in California (2016–2020) despite retail grocery store sales",
-                },
-                {
-                  stat: "0 typical, 10 max",
-                  ref: "stephenson-2024",
-                  description: "Hospitalizations from raw milk per year nationally: typically zero, never more than 10",
-                },
-              ].map((item) => (
-                <div
-                  key={item.stat}
-                  className={css({
-                    padding: "1.5rem",
-                    bg: "bg.tertiary",
-                    borderRadius: "8px",
-                    border: "1px solid",
-                    borderColor: "border.light",
-                  })}
-                >
-                  <h3
-                    className={css({
-                      fontFamily: "heading",
-                      fontSize: "2xl",
-                      fontWeight: "700",
-                      color: "accent.secondary",
-                      marginBottom: "0.5rem",
-                    })}
-                  >
-                    {item.stat}
-                    <Ref k={item.ref} />
-                  </h3>
-                  <p
-                    className={css({
-                      fontFamily: "body",
-                      fontSize: "sm",
-                      color: "text.secondary",
-                      lineHeight: "1.6",
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                </div>
-              ))}
+              <StatCard claimId="stat-deaths-0-2" />
+              <StatCard claimId="stat-outbreak-74" />
+              <StatCard claimId="stat-ca-zero" />
+              <StatCard claimId="stat-hosp" />
             </div>
 
             <p
@@ -171,8 +120,7 @@ export default function SafetyPage() {
                 fontStyle: "italic",
               })}
             >
-              Sources: Stephenson MM, et al. <em>J Epidemiol Glob Health</em>. 2024;14(3):787-816.<Ref k="stephenson-2024" />{" "}
-              Whitehead J, Lake B. <em>PLoS Curr</em>. 2018.<Ref k="whitehead-2018" />
+              Sources: <Cite k="stephenson-2024" short /> <Cite k="whitehead-2018" short />
             </p>
           </div>
 
@@ -203,7 +151,7 @@ export default function SafetyPage() {
                 marginBottom: "1rem",
               })}
             >
-              Deaths by food, CDC outbreak surveillance 2005–2020:<Ref k="stephenson-2024" />
+              <Claim id="deaths-by-food-intro" />
             </p>
             <ul
               className={css({
@@ -218,17 +166,18 @@ export default function SafetyPage() {
                 },
               })}
             >
-              <li>Cantaloupe: 38 deaths (19x more than raw milk)</li>
-              <li>Peanut butter: 10 deaths (5x more than raw milk)</li>
-              <li>Leafy greens: 6 deaths (3x more than raw milk)</li>
-              <li>Pasteurized dairy: 5 deaths (2.5x more than raw milk)</li>
-              <li><strong>Raw milk: 0-2 deaths</strong></li>
+              <Claim id="deaths-cantaloupe" as="li" />
+              <Claim id="deaths-peanut-butter" as="li" />
+              <Claim id="deaths-leafy-greens" as="li" />
+              <Claim id="deaths-pasteurized-dairy" as="li" />
+              <Claim id="deaths-raw-milk" as="li" />
             </ul>
           </div>
         </section>
 
         {/* FDA Position - Moved down but still included */}
         <section
+          data-component="regulatory-position"
           className={css({
             marginBottom: "4rem",
             padding: "2rem",
@@ -258,8 +207,7 @@ export default function SafetyPage() {
               marginBottom: "1rem",
             })}
           >
-            <strong>LACTIVAE™ is NOT FDA approved.</strong> The U.S. Food and Drug Administration states that raw milk
-            can harbor dangerous microorganisms that can pose serious health risks.<Ref k="fda-raw-milk" />
+            <Safety id="reg-not-fda-approved" as="strong" showRefs={false} /> <Claim id="fda-harbor-microorganisms" />
           </p>
           <p
             className={css({
@@ -269,13 +217,13 @@ export default function SafetyPage() {
               lineHeight: "1.6",
             })}
           >
-            However, the 2024 peer-reviewed study concluded: <em>"The available evidence conflicts with assumptions of
-            zero risk for pasteurized milk and increasing trends in the burden of illness for raw milk."</em><Ref k="stephenson-2024" />
+            <Claim id="stephenson-conclusion-quote" />
           </p>
         </section>
 
         {/* Contraindications */}
         <section
+          data-component="contraindications"
           className={css({
             marginBottom: "4rem",
           })}
@@ -289,8 +237,11 @@ export default function SafetyPage() {
               marginBottom: "2rem",
             })}
           >
-            WHO SHOULD NOT CONSUME LACTIVAE™<Ref k="fda-raw-milk" />
+            WHO SHOULD NOT CONSUME LACTIVAE™
           </h2>
+          <p className={css({ fontFamily: "body", fontSize: "sm", color: "text.muted", marginBottom: "1.5rem" })}>
+            Source: <Cite k="fda-raw-milk" short />
+          </p>
 
           <div
             className={css({
@@ -654,5 +605,39 @@ export default function SafetyPage() {
         </section>
       </div>
     </>
+  );
+}
+
+/** A surveillance statistic card rendered from a governed claim (headline + text). */
+function StatCard({ claimId }: { claimId: string }) {
+  return (
+    <div
+      className={css({
+        padding: "1.5rem",
+        bg: "bg.tertiary",
+        borderRadius: "8px",
+        border: "1px solid",
+        borderColor: "border.light",
+      })}
+    >
+      <Claim
+        id={claimId}
+        variant="stat"
+        headlineAs="h3"
+        headlineClassName={css({
+          fontFamily: "heading",
+          fontSize: "2xl",
+          fontWeight: "700",
+          color: "accent.secondary",
+          marginBottom: "0.5rem",
+        })}
+        textClassName={css({
+          fontFamily: "body",
+          fontSize: "sm",
+          color: "text.secondary",
+          lineHeight: "1.6",
+        })}
+      />
+    </div>
   );
 }

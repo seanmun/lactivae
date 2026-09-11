@@ -19,6 +19,12 @@ export interface Proposal {
   proposedSafety: string[];
   rationale: string | null;
   aiAssisted: boolean;
+  /** true when objectId does not exist yet in the registry (create-claims workflow) */
+  isNew?: boolean;
+  proposedType?: string | null;
+  proposedLabel?: string | null;
+  /** reference key the suggestion came from */
+  sourceRef?: string | null;
   status: ProposalStatus;
   author: string;
   authorEmail?: string | null;
@@ -36,6 +42,10 @@ export interface ProposalInput {
   proposedSafety: string[];
   rationale?: string | null;
   aiAssisted?: boolean;
+  isNew?: boolean;
+  proposedType?: string | null;
+  proposedLabel?: string | null;
+  sourceRef?: string | null;
 }
 
 export interface AuditEvent {

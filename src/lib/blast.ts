@@ -5,7 +5,7 @@
  * preview while typing).
  */
 
-import { claims, getClaim, EVIDENCE_TYPES, type ClaimRef } from "@/data/claims";
+import { claims, getClaim, EVIDENCE_TYPES, type ClaimRef, type ClaimType } from "@/data/claims";
 import { getSafety } from "@/data/safety";
 import { getReference, referenceNumber, shortCitation } from "@/data/references";
 import { usagesOf, edgesTo, type GraphNode, type Usage } from "@/lib/graph";
@@ -134,4 +134,43 @@ export function blastRadius(claimId: string, proposed: ProposedShape): BlastRadi
   }
 
   return { usages, pages, refs, safety, siblings, numbers: { before, after, changed: numbersChanged }, flags };
+}
+
+/**
+ * Blast radius for a claim that does not exist yet (create-claims workflow):
+ * no usages, every reference and safety link is an addition, and the same
+ * language and evidence gates apply.
+ */
+export function newClaimRadius(proposed: ProposedShape & { type: ClaimType }): BlastRadius {
+  const refKeys = Array.from(new Set(proposed.refs.map((r) => r.key)));
+  const refs = refKeys.map((key) => {
+    const ref = getReference(key);
+    const pr = proposed.refs.find((r) => r.key === key);
+    return { key, number: referenceNumber(key), citation: `${shortCitation(ref)} — ${ref.title}`, locator: pr?.locator, state: "added" as const };
+  });
+  const safety = proposed.safety.map((id) => {
+    const s = getSafety(id);
+    return { id, label: s.label, text: s.text, state: "added" as const };
+  });
+  const siblings = claims
+    .map((c) => ({ id: c.id, label: c.label, sharedRefs: Array.from(new Set(c.refs.map((r) => r.key).filter((k) => refKeys.includes(k)))) }))
+    .filter((c) => c.sharedRefs.length > 0);
+  const after = extractNumbers(proposed.text);
+  const flags: BlastFlag[] = [];
+  if (EVIDENCE_TYPES.includes(proposed.type) && refKeys.length === 0) {
+    flags.push({ level: "error", message: `A ${proposed.type} claim must cite at least one reference.` });
+  }
+  for (const r of proposed.refs) {
+    if (!r.quote) flags.push({ level: "warn", message: `Reference [${referenceNumber(r.key)}] has no supporting quote recorded. Add the passage before approval.` });
+  }
+  if (/\b(cure|cures|treat|treats|heal|heals|prevent|prevents|safe|guaranteed)\b/i.test(proposed.text)) {
+    flags.push({ level: "error", message: "Prohibited language: absolute or therapeutic terms (cure, treat, prevent, safe). Use association language." });
+  }
+  if (after.length > 0) flags.push({ level: "info", message: `Statistics in the proposed text (${after.join(", ")}) must match the cited quote exactly.` });
+  if (proposed.type === "efficacy" && proposed.safety.length === 0) {
+    flags.push({ level: "warn", message: "Efficacy claims normally carry a fair-balance link (e.g. reg-not-fda-approved)." });
+  }
+  flags.push({ level: "info", message: "New claim: not rendered anywhere until a page adopts it with <Claim id=\"…\"/>. Promotion adds it to src/data/governed/suggested.ts." });
+  if (siblings.length > 0) flags.push({ level: "info", message: `${siblings.length} existing claim${siblings.length === 1 ? " cites" : "s cite"} the same evidence.` });
+  return { usages: [], pages: [], refs, safety, siblings, numbers: { before: [], after, changed: after.length > 0 }, flags };
 }

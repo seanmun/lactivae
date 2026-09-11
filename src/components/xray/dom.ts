@@ -41,6 +41,7 @@ export function collectGoverned(route: string): GovernedElement[] {
     if (el.dataset.claim) out.push({ el, kind: "claim", nodeId: nodeIdFor("claim", el.dataset.claim, route) });
     else if (el.dataset.safety) out.push({ el, kind: "safety", nodeId: nodeIdFor("safety", el.dataset.safety, route) });
     else if (el.dataset.ref) out.push({ el, kind: "ref", nodeId: nodeIdFor("ref", el.dataset.ref, route) });
+    else if (el.dataset.cite) out.push({ el, kind: "ref", nodeId: nodeIdFor("ref", el.dataset.cite, route) });
     else if (el.dataset.component) {
       // Shared layout components (ISI) live on page "*" in the graph
       const isLayout = el.closest("[data-layout-component]") !== null || el.dataset.layoutComponent !== undefined;

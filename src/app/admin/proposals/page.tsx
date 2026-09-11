@@ -78,7 +78,7 @@ export default async function ProposalsPage({ searchParams }: { searchParams: Pr
             </thead>
             <tbody>
               {proposals.map((p) => {
-                const label = p.objectKind === "claim" ? getClaim(p.objectId).label : p.objectId;
+                const label = p.isNew ? `${p.proposedLabel ?? p.objectId} (new claim)` : p.objectKind === "claim" ? getClaim(p.objectId).label : p.objectId;
                 return (
                   <tr key={p.id}>
                     <td>

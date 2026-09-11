@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireApiRole, READ_ROLES, WRITE_ROLES } from "@/lib/api-auth";
 import { getProposalStore, TRANSITIONS, type ProposalStatus } from "@/lib/proposals";
-import { blastRadius } from "@/lib/blast";
+import { blastRadius, newClaimRadius } from "@/lib/blast";
+import { claims, type ClaimType } from "@/data/claims";
 
 export const dynamic = "force-dynamic";
 
@@ -15,11 +16,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const proposal = await store.get(id);
   if (!proposal) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const radius = blastRadius(proposal.objectId, {
-    text: proposal.proposedText,
-    refs: proposal.proposedRefs,
-    safety: proposal.proposedSafety,
-  });
+  const shape = { text: proposal.proposedText, refs: proposal.proposedRefs, safety: proposal.proposedSafety };
+  const radius = proposal.isNew ? newClaimRadius({ ...shape, type: (proposal.proposedType as ClaimType) ?? "factual" }) : blastRadius(proposal.objectId, shape);
   const audit = await store.listAudit({ proposalId: id });
   return NextResponse.json({
     proposal,
@@ -52,14 +50,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   // Governance gates, enforced server-side regardless of which UI made the call.
   if (status === "staged" || status === "approved") {
-    const radius = blastRadius(before.objectId, { text: before.proposedText, refs: before.proposedRefs, safety: before.proposedSafety });
+    const shape = { text: before.proposedText, refs: before.proposedRefs, safety: before.proposedSafety };
+    const radius = before.isNew ? newClaimRadius({ ...shape, type: (before.proposedType as ClaimType) ?? "factual" }) : blastRadius(before.objectId, shape);
     const blocking = radius.flags.filter((f) => f.level === "error");
     if (blocking.length > 0) {
       return NextResponse.json({ error: `Blocking review flags: ${blocking.map((f) => f.message).join(" ")}`, flags: blocking }, { status: 409 });
     }
   }
   // Promotion requires the proposal still be based on the current approved version.
-  if (status === "approved") {
+  if (status === "approved" && before.isNew) {
+    if (claims.some((c) => c.id === before.objectId)) {
+      return NextResponse.json({ error: `Claim "${before.objectId}" now exists in the registry; this new-claim proposal is obsolete.` }, { status: 409 });
+    }
+  } else if (status === "approved") {
     const { getClaim } = await import("@/data/claims");
     const claim = getClaim(before.objectId);
     if (claim.version !== before.baseVersion) {

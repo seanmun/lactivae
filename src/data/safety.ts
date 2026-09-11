@@ -10,7 +10,7 @@
  * Inline formatting in `text`: *italic* and **bold** only (see components/governed/inline.tsx).
  */
 
-import type { ClaimRef, ClaimStatus } from "./claims";
+import type { ClaimRef, ClaimStatus } from "./claim-types";
 
 export type SafetyKind = "contraindication" | "risk" | "mitigation" | "regulatory";
 

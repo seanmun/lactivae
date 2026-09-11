@@ -162,9 +162,9 @@ export default function GraphPage() {
                 <tr key={r.key}>
                   <td className={mono}>{i + 1}</td>
                   <td>
-                    <a href={`/references#ref-${i + 1}`} className={link}>
+                    <Link href={`/admin/references/${r.key}`} className={link}>
                       {r.authors.split(",")[0]} {r.year}
-                    </a>
+                    </Link>
                     <div className={css({ fontSize: "xs", color: "text.secondary" })}>{r.title}</div>
                   </td>
                   <td className={mono}>{r.access}</td>

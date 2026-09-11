@@ -1,6 +1,7 @@
 import { css } from "../../../styled-system/css";
 import Link from "next/link";
-import Ref from "@/components/ui/Ref";
+import Claim from "@/components/governed/Claim";
+import Cite from "@/components/governed/Cite";
 
 export const metadata = {
   title: "For Patients - LACTIVAE™ Consumer Information",
@@ -83,6 +84,7 @@ export default function PatientsPage() {
       >
         {/* Modern Safety Evidence */}
         <section
+          data-component="safety-evidence"
           className={css({
             marginBottom: "4rem",
           })}
@@ -127,9 +129,7 @@ export default function PatientsPage() {
                 marginBottom: "1rem",
               })}
             >
-              A 2024 analysis of 16 years of CDC surveillance data (2005–2020), together with an earlier outbreak-trend
-              study, found that properly produced raw milk from licensed, tested sources has a stronger safety record than
-              commonly assumed:<Ref k={["stephenson-2024", "whitehead-2018"]} />
+              <Claim id="pat-safety-intro" />
             </p>
             <ul
               className={css({
@@ -144,10 +144,10 @@ export default function PatientsPage() {
                 },
               })}
             >
-              <li>California reported <strong>zero illnesses</strong> from 2016–2020 despite retail grocery store sales<Ref k="stephenson-2024" /></li>
-              <li>Outbreak rates <strong>decreased 74%</strong> from 2005 to 2016 after adjusting for growth in population and consumption<Ref k="whitehead-2018" /></li>
-              <li>Hospitalizations from raw milk were typically zero, with a maximum of 10 in any single year nationally<Ref k="stephenson-2024" /></li>
-              <li>Raw milk caused fewer deaths (0–2) than cantaloupe (38), leafy greens (6), and pasteurized dairy (5) over the same period<Ref k="stephenson-2024" /></li>
+              <Claim id="ca-zero-illnesses" as="li" />
+              <Claim id="outbreak-74-adjusted" as="li" />
+              <Claim id="hosp-typically-zero" as="li" />
+              <Claim id="deaths-comparative-foods" as="li" />
             </ul>
             <p
               className={css({
@@ -159,8 +159,7 @@ export default function PatientsPage() {
                 marginTop: "1rem",
               })}
             >
-              Sources: Stephenson MM, et al. <em>J Epidemiol Glob Health</em>. 2024;14(3):787-816.<Ref k="stephenson-2024" />{" "}
-              Whitehead J, Lake B. <em>PLoS Curr</em>. 2018.<Ref k="whitehead-2018" />
+              Sources: <Cite k="stephenson-2024" short /> <Cite k="whitehead-2018" short />
             </p>
           </div>
 
@@ -215,6 +214,7 @@ export default function PatientsPage() {
 
         {/* FAQs */}
         <section
+          data-component="faqs"
           className={css({
             marginBottom: "4rem",
           })}
@@ -241,13 +241,9 @@ export default function PatientsPage() {
               a: (
                 <>
                   When properly produced by licensed, regularly tested dairies with strong protocols, modern raw milk has a
-                  strong safety record. A 2024 analysis of CDC data found California reported zero illnesses from 2016–2020
-                  despite retail sales,<Ref k="stephenson-2024" /> and an earlier study found the outbreak rate fell 74% from
-                  2005 to 2016 after adjusting for growth in consumption.<Ref k="whitehead-2018" /> However, raw milk can
+                  strong safety record. <Claim id="ca-zero-illnesses" />. <Claim id="whitehead-74-adjusted" /> However, raw milk can
                   contain bacteria if not properly handled, which is why sourcing from tested, licensed producers and
-                  following proper storage is critical. The FDA and CDC recommend against consumption,
-                  <Ref k={["fda-raw-milk", "cdc-raw-milk"]} /> though recent research challenges assumptions about raw milk
-                  risk trends.<Ref k="stephenson-2024" />
+                  following proper storage is critical. <Claim id="fda-cdc-recommend-against" />
                 </>
               ),
             },
@@ -255,13 +251,8 @@ export default function PatientsPage() {
               q: "What are the potential benefits?",
               a: (
                 <>
-                  Some research suggests raw milk retains heat-sensitive enzymes, immune proteins and live bacteria that
-                  pasteurization reduces or destroys.<Ref k={["claeys-2013", "peila-2016"]} /> Large European cohort studies
-                  have found associations between early-life raw farm milk consumption and lower rates of asthma and
-                  allergy in children,<Ref k={["brick-2020", "loss-2011", "waser-2007"]} /> though these are observational
-                  findings that may be confounded by other lifestyle factors. The authors of those studies advise against
-                  raw milk consumption because of infection risk, and the evidence is not sufficient to outweigh the safety
-                  risks for most people.<Ref k="brick-2020" />
+                  <Claim id="raw-retains-bioactives" /> <Claim id="cohorts-asthma-allergy" />{" "}
+                  <Claim id="authors-advise-against" />
                 </>
               ),
             },
@@ -424,6 +415,7 @@ export default function PatientsPage() {
 
         {/* Finding Quality Sources */}
         <section
+          data-component="sourcing"
           className={css({
             marginBottom: "4rem",
           })}
@@ -468,11 +460,10 @@ export default function PatientsPage() {
           >
             <li>
               <strong>Licensed & Inspected:</strong> Only purchase from licensed facilities that undergo regular health
-              department inspections. Legal status varies by state.<Ref k="realmilk" />
+              department inspections. <Claim id="legal-status-varies" />
             </li>
             <li>
-              <strong>Testing:</strong> Look for producers who regularly test their milk for pathogens. Ask about their
-              testing frequency and recent results<Ref k="rawmi" />
+              <strong>Testing:</strong> <Claim id="producer-testing" />
             </li>
             <li>
               <strong>Cleanliness:</strong> Visit the farm if possible. Observe milking practices, animal health, and
@@ -484,8 +475,7 @@ export default function PatientsPage() {
             </li>
             <li>
               <strong>Cooling:</strong> Milk should be cooled immediately after milking and maintained at proper
-              refrigeration temperatures throughout distribution. Major bacterial pathogens did not grow in raw milk held
-              at recommended refrigeration temperature in a controlled study.<Ref k="coleman-2023" />
+              refrigeration temperatures throughout distribution. <Claim id="refrigeration-suppresses" />
             </li>
             <li>
               <strong>Freshness:</strong> Consume milk as fresh as possible. Ask about production date and never consume

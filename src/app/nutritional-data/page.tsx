@@ -4,6 +4,9 @@ import { css } from "../../../styled-system/css";
 import Link from "next/link";
 import { useState } from "react";
 import Ref from "@/components/ui/Ref";
+import Claim, { governedAttrs } from "@/components/governed/Claim";
+import Cite from "@/components/governed/Cite";
+import { getClaim } from "@/data/claims";
 
 export default function NutritionalDataPage() {
   const [activeComparison, setActiveComparison] = useState<"pasteurized" | "supplements">("pasteurized");
@@ -83,6 +86,7 @@ export default function NutritionalDataPage() {
       >
         {/* Complete Vitamin Profile */}
         <section
+          data-component="vitamin-profile"
           className={css({
             marginBottom: "4rem",
           })}
@@ -108,9 +112,8 @@ export default function NutritionalDataPage() {
               marginBottom: "2rem",
             })}
           >
-            Per 8 oz (240 mL) serving of grass-fed LACTIVAE™ (raw milk, oral solution). Values are for unfortified
-            whole cow&rsquo;s milk.<Ref k="usda-fdc" /> Raw milk is not fortified with vitamin D, so the vitamin D
-            content is far below that of store milk.<Ref k="usda-fdc" />
+            Per 8 oz (240 mL) serving of grass-fed LACTIVAE™ (raw milk, oral solution). <Claim id="nutr-serving-basis" />{" "}
+            <Claim id="nutr-vitd-unfortified" />
           </p>
 
           {/* Vitamins Table */}
@@ -166,12 +169,7 @@ export default function NutritionalDataPage() {
                   <td>13%</td>
                   <td>Vision, immune function, skin health</td>
                 </tr>
-                <tr>
-                  <td><strong>Vitamin D3 (Cholecalciferol)</strong><Ref k="usda-fdc" /></td>
-                  <td>~5 IU (0.1 mcg)</td>
-                  <td>&lt;1%</td>
-                  <td>Bone health, immune modulation. Unfortified; store milk is fortified to ~100 IU per serving</td>
-                </tr>
+                <VitaminRow claimId="nutr-row-vitd" />
                 <tr>
                   <td><strong>Vitamin E (Tocopherol)</strong></td>
                   <td>0.2 mg</td>
@@ -184,12 +182,7 @@ export default function NutritionalDataPage() {
                   <td>1%</td>
                   <td>Bone mineralization, cardiovascular health</td>
                 </tr>
-                <tr>
-                  <td><strong>Vitamin C (Ascorbic Acid)</strong><Ref k="claeys-2013" /></td>
-                  <td>2.3 mg</td>
-                  <td>3%</td>
-                  <td>Immune function, collagen synthesis</td>
-                </tr>
+                <VitaminRow claimId="nutr-row-vitc" />
                 <tr>
                   <td><strong>Thiamin (B1)</strong></td>
                   <td>0.11 mg</td>
@@ -367,6 +360,7 @@ export default function NutritionalDataPage() {
 
         {/* Comparison Tabs */}
         <section
+          data-component="comparison"
           className={css({
             marginBottom: "4rem",
           })}
@@ -481,72 +475,17 @@ export default function NutritionalDataPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td><strong>Vitamin C</strong><Ref k={["claeys-2013", "macdonald-2011"]} /></td>
-                      <td>2.3 mg</td>
-                      <td>1.7 mg</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+35% ↑</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Vitamin B12</strong><Ref k={["claeys-2013", "macdonald-2011"]} /></td>
-                      <td>1.1 mcg</td>
-                      <td>1.0 mcg</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+10% ↑</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Folate</strong><Ref k={["claeys-2013", "macdonald-2011"]} /></td>
-                      <td>12 mcg</td>
-                      <td>10 mcg</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+20% ↑</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Omega-3 Fatty Acids</strong> (grass-fed vs conventional, per 100 g)<Ref k="benbrook-2018" /></td>
-                      <td>49 mg</td>
-                      <td>20 mg</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+147% ↑</td>
-                    </tr>
-                    <tr>
-                      <td><strong>CLA (Conjugated Linoleic Acid)</strong> (grass-fed vs conventional, per 100 g)<Ref k="benbrook-2018" /></td>
-                      <td>43 mg</td>
-                      <td>19 mg</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>+126% ↑</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Alkaline Phosphatase</strong><Ref k="claeys-2013" /></td>
-                      <td>Active</td>
-                      <td>Inactivated</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Lipase Enzyme</strong><Ref k="claeys-2013" /></td>
-                      <td>Active</td>
-                      <td>Destroyed</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Lactoperoxidase System</strong><Ref k="claeys-2013" /></td>
-                      <td>Active</td>
-                      <td>Destroyed</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>Native ✓</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Immunoglobulin G (IgG)</strong><Ref k={["claeys-2013", "peila-2016"]} /></td>
-                      <td>Native</td>
-                      <td>~99% retained (HTST)</td>
-                      <td className={css({ color: "text.muted", fontWeight: "600" })}>≈1% loss</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Immunoglobulin A (IgA)</strong><Ref k={["peila-2016", "haas-2025"]} /></td>
-                      <td>Native</td>
-                      <td>65–80% retained (HTST)</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>20–35% loss</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Lactoferrin</strong><Ref k={["peila-2016", "haas-2025"]} /></td>
-                      <td>Native</td>
-                      <td>35–65% retained (HTST)</td>
-                      <td className={css({ color: "accent.secondary", fontWeight: "600" })}>35–65% loss</td>
-                    </tr>
+                    <NutrientRow claimId="cmp-vitamin-c" />
+                    <NutrientRow claimId="cmp-b12" />
+                    <NutrientRow claimId="cmp-folate" />
+                    <NutrientRow claimId="cmp-omega3" />
+                    <NutrientRow claimId="cmp-cla" />
+                    <NutrientRow claimId="cmp-alp" />
+                    <NutrientRow claimId="cmp-lipase" />
+                    <NutrientRow claimId="cmp-lactoperoxidase" />
+                    <NutrientRow claimId="cmp-igg" />
+                    <NutrientRow claimId="cmp-iga" />
+                    <NutrientRow claimId="cmp-lactoferrin" />
                   </tbody>
                 </table>
               </div>
@@ -560,12 +499,9 @@ export default function NutritionalDataPage() {
                   marginTop: "1.5rem",
                 })}
               >
-                Sources: Claeys WL, et al. "Raw or heated cow milk consumption: review of risks and benefits."
-                Food Control. 2013;31(1):251-262.<Ref k="claeys-2013" /> Macdonald LE, et al. J Food Prot.
-                2011;74(11):1814-1832.<Ref k="macdonald-2011" /> Peila C, et al. Nutrients. 2016;8(8):477.<Ref k="peila-2016" /> Haas
-                J, et al. J Dairy Sci. 2025;108(1):257-271.<Ref k="haas-2025" /> Fatty-acid rows: Benbrook CM, et al. Food Sci Nutr.
-                2018;6(3):681-700,<Ref k="benbrook-2018" /> which compares grass-fed with conventional feeding rather than raw with
-                pasteurized milk. Calcium and other minerals are not significantly affected by pasteurization.<Ref k="claeys-2013" />
+                Sources: <Cite k="claeys-2013" /> <Cite k="macdonald-2011" short /> <Cite k="peila-2016" short />{" "}
+                <Cite k="haas-2025" short /> Fatty-acid rows: <Cite k="benbrook-2018" short /> <Claim id="cmp-framing-fatty-acids" />{" "}
+                <Claim id="heat-minerals" />.
               </p>
             </div>
           )}
@@ -754,9 +690,7 @@ export default function NutritionalDataPage() {
                     bioavailability
                   </li>
                   <li>
-                    <strong>Native enzymes:</strong> Lipase, alkaline phosphatase and the lactoperoxidase system remain
-                    active in raw milk.<Ref k="claeys-2013" /> Raw milk contains negligible lactase; a randomized crossover
-                    trial found no improvement in lactose intolerance symptoms versus pasteurized milk.<Ref k="mummah-2014" />
+                    <strong>Native enzymes:</strong> <Claim id="nutr-native-enzymes" /> <Claim id="lactose-no-benefit" />
                   </li>
                   <li>
                     <strong>Bioactive peptides:</strong> Released during digestion, provide additional immune and
@@ -774,8 +708,7 @@ export default function NutritionalDataPage() {
                   marginTop: "1.5rem",
                 })}
               >
-                Sources: Heaney RP. "Calcium, dairy products and osteoporosis." J Am Coll Nutr. 2000;19(2 Suppl):83S-99S.<Ref k="heaney-2000" />{" "}
-                Scholz-Ahrens KE, et al. "Nutritional and health attributes of milk and milk imitations." Eur J Nutr. 2020;59(1):19-34.<Ref k="scholz-ahrens-2020" />
+                Sources: <Cite k="heaney-2000" /> <Cite k="scholz-ahrens-2020" />
               </p>
             </div>
           )}
@@ -1026,5 +959,46 @@ export default function NutritionalDataPage() {
         </section>
       </div>
     </>
+  );
+}
+
+/** A vitamin/mineral row whose values come from a governed claim's structured data. */
+function VitaminRow({ claimId }: { claimId: string }) {
+  const claim = getClaim(claimId);
+  const d = claim.data ?? {};
+  const refKeys = Array.from(new Set(claim.refs.map((r) => r.key)));
+  return (
+    <tr {...governedAttrs(claim)}>
+      <td>
+        <strong>{d.name}</strong>
+        <Ref k={refKeys} />
+      </td>
+      <td>{d.amount}</td>
+      <td>{d.dv}</td>
+      <td>{d.benefits}</td>
+    </tr>
+  );
+}
+
+/** A raw-vs-pasteurized comparison row rendered from the shared comparison claims. */
+function NutrientRow({ claimId }: { claimId: string }) {
+  const claim = getClaim(claimId);
+  const d = claim.data ?? {};
+  const refKeys = Array.from(new Set(claim.refs.map((r) => r.key)));
+  const numeric = /^[+-]\d/.test(d.advantage ?? "");
+  return (
+    <tr {...governedAttrs(claim)}>
+      <td>
+        <strong>{d.nutrient}</strong>
+        {d.qualifier ? ` (${d.qualifier})` : ""}
+        <Ref k={refKeys} />
+      </td>
+      <td>{d.rawValue}</td>
+      <td>{d.pastValue}</td>
+      <td className={css({ color: d.tone === "muted" ? "text.muted" : "accent.secondary", fontWeight: "600" })}>
+        {d.advantage}
+        {numeric ? " ↑" : d.advantage === "Native" ? " ✓" : ""}
+      </td>
+    </tr>
   );
 }

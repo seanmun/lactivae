@@ -933,6 +933,7 @@ function ComparisonRow({ claimId, index }: { claimId: string; index: number }) {
           })}
         >
           {d.nutrient}
+          {d.qualifier ? ` (${d.qualifier})` : ""}
           <Ref k={refKeys} />
         </div>
         <div
@@ -989,6 +990,7 @@ function ComparisonRow({ claimId, index }: { claimId: string; index: number }) {
           })}
         >
           {d.nutrient}
+          {d.qualifier ? ` (${d.qualifier})` : ""}
         </div>
         <span
           className={css({
