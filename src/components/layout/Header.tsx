@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { css } from "../../../styled-system/css";
 import { useState } from "react";
 
@@ -69,24 +70,37 @@ export default function Header() {
           </svg>
         </button>
 
-        {/* Logo - Center on mobile, Left on desktop */}
+        {/* Logo - Center on mobile, Left on desktop.
+            The mark is artwork; the name stays live text so it is selectable,
+            scales with the accessibility font-size control, and stays sharp. */}
         <Link
           href="/"
           className={css({
+            display: "flex",
+            alignItems: "center",
+            gap: { base: "0.55rem", md: "0.7rem" },
             textDecoration: "none",
-            _hover: {
-              "& > div > span:first-of-type": {
-                color: "accent.secondary",
-              },
-            },
+            _hover: { "& [data-wordmark]": { color: "accent.secondary" } },
+            _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "4px", borderRadius: "4px" },
           })}
         >
-          <div
+          <Image
+            src="/logos/lactivae-mark.png"
+            alt=""
+            aria-hidden="true"
+            width={170}
+            height={132}
+            priority
             className={css({
-              lineHeight: "1",
+              display: "block",
+              width: "auto",
+              height: { base: "34px", md: "42px" },
+              flexShrink: 0,
             })}
-          >
+          />
+          <div className={css({ lineHeight: "1" })}>
             <span
+              data-wordmark
               className={css({
                 fontFamily: "heading",
                 fontSize: "2xl",
