@@ -946,7 +946,7 @@ function ChartCard({ claimId }: { claimId: string }) {
       {d.qualifier && <p className={css({ fontFamily: "mono", fontSize: "xs", color: "text.muted", marginBottom: "1rem" })}>{d.qualifier}</p>}
       <div className={css({ marginBottom: "1rem", marginTop: d.qualifier ? 0 : "0.75rem" })}>
         {row("LACTIVAE™", rawPct, v.rawLabel, "#C67830", "#FFFDF5")}
-        {row("Pasteurized", pastPct, v.pastLabel, "rgba(61, 45, 34, 0.35)", "#FFFDF5")}
+        {row("Pasteurized", pastPct, v.pastLabel, "rgba(61, 45, 34, 0.35)", "#1A1A1A")}
       </div>
       {advantage && (
         <p className={css({ fontFamily: "body", fontSize: "xs", color: d.tone === "muted" ? "text.muted" : "accent.secondary", fontWeight: "600" })}>{advantage}</p>
