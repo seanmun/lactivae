@@ -716,6 +716,8 @@ export default function NutritionalDataPage() {
 
         {/* Visual Comparison Charts */}
         <section
+          id="charts"
+          data-component="charts"
           className={css({
             marginBottom: "4rem",
           })}
@@ -731,6 +733,19 @@ export default function NutritionalDataPage() {
           >
             Key Nutrient Advantages (Visual Comparison)
           </h2>
+          <p
+            className={css({
+              fontFamily: "body",
+              fontSize: "sm",
+              color: "text.secondary",
+              lineHeight: "1.6",
+              marginBottom: "2rem",
+              maxWidth: "800px",
+            })}
+          >
+            Each bar is scaled to the larger of the two values. Fatty-acid cards compare grass-fed with conventional feeding;
+            the others compare raw with HTST-pasteurized milk. Values and references are the same governed objects as the table above.
+          </p>
 
           <div
             className={css({
@@ -739,148 +754,15 @@ export default function NutritionalDataPage() {
               gap: "2rem",
             })}
           >
-            {[
-              { name: "Omega-3 Fatty Acids", raw: 147, pasteurized: 100 },
-              { name: "Vitamin C", raw: 135, pasteurized: 100 },
-              { name: "CLA", raw: 162, pasteurized: 100 },
-              { name: "Immunoglobulins", raw: 143, pasteurized: 100 },
-              { name: "Lactoferrin", raw: 188, pasteurized: 100 },
-              { name: "Active Enzymes", raw: 100, pasteurized: 0 },
-            ].map((item) => (
-              <div
-                key={item.name}
-                className={css({
-                  padding: "1.5rem",
-                  bg: "bg.secondary",
-                  borderRadius: "8px",
-                  border: "1px solid",
-                  borderColor: "border.light",
-                })}
-              >
-                <h3
-                  className={css({
-                    fontFamily: "body",
-                    fontSize: "base",
-                    fontWeight: "600",
-                    color: "accent.primary",
-                    marginBottom: "1rem",
-                  })}
-                >
-                  {item.name}
-                </h3>
-
-                {/* Bar Chart */}
-                <div
-                  className={css({
-                    marginBottom: "1rem",
-                  })}
-                >
-                  <div
-                    className={css({
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: "0.5rem",
-                    })}
-                  >
-                    <span
-                      className={css({
-                        fontFamily: "body",
-                        fontSize: "xs",
-                        color: "text.muted",
-                        width: "100px",
-                        flexShrink: 0,
-                      })}
-                    >
-                      LACTIVAE™
-                    </span>
-                    <div
-                      className={css({
-                        flex: 1,
-                        height: "32px",
-                        bg: "accent.secondary",
-                        borderRadius: "4px",
-                        position: "relative",
-                        width: `${item.raw}%`,
-                        maxWidth: "100%",
-                      })}
-                    >
-                      <span
-                        className={css({
-                          position: "absolute",
-                          right: "8px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          fontFamily: "mono",
-                          fontSize: "sm",
-                          fontWeight: "700",
-                          color: "bg.primary",
-                        })}
-                      >
-                        {item.raw}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div
-                    className={css({
-                      display: "flex",
-                      alignItems: "center",
-                    })}
-                  >
-                    <span
-                      className={css({
-                        fontFamily: "body",
-                        fontSize: "xs",
-                        color: "text.muted",
-                        width: "100px",
-                        flexShrink: 0,
-                      })}
-                    >
-                      Pasteurized
-                    </span>
-                    <div
-                      className={css({
-                        flex: 1,
-                        height: "32px",
-                        bg: "border.medium",
-                        borderRadius: "4px",
-                        position: "relative",
-                        width: `${item.pasteurized}%`,
-                        maxWidth: "100%",
-                      })}
-                    >
-                      <span
-                        className={css({
-                          position: "absolute",
-                          right: "8px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          fontFamily: "mono",
-                          fontSize: "sm",
-                          fontWeight: "700",
-                          color: "text.primary",
-                        })}
-                      >
-                        {item.pasteurized}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {item.raw > item.pasteurized && (
-                  <p
-                    className={css({
-                      fontFamily: "body",
-                      fontSize: "xs",
-                      color: "accent.secondary",
-                      fontWeight: "600",
-                    })}
-                  >
-                    +{item.raw - item.pasteurized}% advantage
-                  </p>
-                )}
-              </div>
-            ))}
+            {/* One card per governed comparison claim; bars are scaled to the larger value */}
+            <ChartCard claimId="cmp-omega3" />
+            <ChartCard claimId="cmp-cla" />
+            <ChartCard claimId="cmp-vitamin-c" />
+            <ChartCard claimId="cmp-folate" />
+            <ChartCard claimId="cmp-lactoferrin" />
+            <ChartCard claimId="cmp-iga" />
+            <ChartCard claimId="cmp-alp" />
+            <ChartCard claimId="cmp-lab" />
           </div>
         </section>
 
@@ -1000,5 +882,75 @@ function NutrientRow({ claimId }: { claimId: string }) {
         {numeric ? " ↑" : d.advantage === "Native" ? " ✓" : ""}
       </td>
     </tr>
+  );
+}
+
+/** Parse "49 mg", "2.3 mg", "35–65% retained (HTST)" into a number for charting */
+function chartValue(raw: string | undefined, past: string | undefined): { raw: number; past: number; rawLabel: string; pastLabel: string } {
+  const num = (v: string) => {
+    const m = v.match(/(\d+(?:\.\d+)?)(?:\s*[–-]\s*(\d+(?:\.\d+)?))?/);
+    if (!m) return null;
+    const a = parseFloat(m[1]);
+    const b = m[2] ? parseFloat(m[2]) : null;
+    return b === null ? a : (a + b) / 2; // "35–65% retained" → 50
+  };
+  const r = num(raw ?? "");
+  const pv = num(past ?? "");
+  if (r !== null && pv !== null) return { raw: r, past: pv, rawLabel: raw ?? "", pastLabel: past ?? "" };
+  // qualitative rows: Native/Active/Present vs retained % / Inactivated / Destroyed / Eliminated
+  if (pv !== null) return { raw: 100, past: pv, rawLabel: "100%", pastLabel: past ?? "" };
+  return { raw: 100, past: 0, rawLabel: raw ?? "Active", pastLabel: past ?? "None" };
+}
+
+/** A relative bar chart for one governed comparison claim. */
+function ChartCard({ claimId }: { claimId: string }) {
+  const claim = getClaim(claimId);
+  const d = claim.data ?? {};
+  const v = chartValue(d.rawValue, d.pastValue);
+  const max = Math.max(v.raw, v.past, 1);
+  const rawPct = Math.round((v.raw / max) * 100);
+  const pastPct = Math.round((v.past / max) * 100);
+  const refKeys = Array.from(new Set(claim.refs.map((r) => r.key)));
+  const advantage = /^[+-]\d/.test(d.advantage ?? "") ? `${d.advantage} advantage` : d.advantage;
+
+  const row = (label: string, pct: number, valueLabel: string, fill: string, textColor: string) => (
+    <div className={css({ display: "flex", alignItems: "center", marginBottom: "0.5rem" })}>
+      <span className={css({ fontFamily: "body", fontSize: "xs", color: "text.muted", width: "100px", flexShrink: 0 })}>{label}</span>
+      <div className={css({ flex: 1, height: "32px", bg: "bg.tertiary", borderRadius: "4px", position: "relative", overflow: "hidden" })}>
+        <div className={css({ height: "100%", borderRadius: "4px", transition: "width 0.4s ease-out" })} style={{ width: `${Math.max(pct, 2)}%`, background: fill }} />
+        <span
+          className={css({ position: "absolute", top: "50%", transform: "translateY(-50%)", fontFamily: "mono", fontSize: "sm", fontWeight: "700", whiteSpace: "nowrap" })}
+          style={pct > 45 ? { right: "8px", color: textColor } : { left: `calc(${Math.max(pct, 2)}% + 8px)`, color: "#4D4D4D" }}
+        >
+          {valueLabel}
+        </span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      {...governedAttrs(claim)}
+      className={css({
+        padding: "1.5rem",
+        bg: "bg.secondary",
+        borderRadius: "8px",
+        border: "1px solid",
+        borderColor: "border.light",
+      })}
+    >
+      <h3 className={css({ fontFamily: "body", fontSize: "base", fontWeight: "600", color: "accent.primary", marginBottom: "0.25rem" })}>
+        {d.nutrient}
+        <Ref k={refKeys} />
+      </h3>
+      {d.qualifier && <p className={css({ fontFamily: "mono", fontSize: "xs", color: "text.muted", marginBottom: "1rem" })}>{d.qualifier}</p>}
+      <div className={css({ marginBottom: "1rem", marginTop: d.qualifier ? 0 : "0.75rem" })}>
+        {row("LACTIVAE™", rawPct, v.rawLabel, "#C67830", "#FFFDF5")}
+        {row("Pasteurized", pastPct, v.pastLabel, "rgba(61, 45, 34, 0.35)", "#FFFDF5")}
+      </div>
+      {advantage && (
+        <p className={css({ fontFamily: "body", fontSize: "xs", color: d.tone === "muted" ? "text.muted" : "accent.secondary", fontWeight: "600" })}>{advantage}</p>
+      )}
+    </div>
   );
 }

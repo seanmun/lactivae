@@ -23,6 +23,7 @@
 import { readFileSync, writeFileSync, mkdirSync, globSync } from "node:fs";
 import { resolve, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execSync } from "node:child_process";
 
 import { claims, EVIDENCE_TYPES } from "../src/data/claims.ts";
 import { safetyObjects } from "../src/data/safety.ts";
@@ -208,6 +209,24 @@ const graph = {
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(graph, null, 2) + "\n");
+
+// ---------------------------------------------------------------- build stamp
+// Footer shows "As of <commit date> · <sha>" so a stale deployment is obvious.
+// Prefer git; fall back to Vercel's env when the checkout has no history.
+let commit = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || "local";
+let commitDate = new Date().toISOString();
+try {
+  const out = execSync("git log -1 --format='%h|%cI'", { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  const [sha, iso] = out.split("|");
+  if (sha) commit = sha;
+  if (iso) commitDate = iso;
+} catch {
+  // no git in this environment
+}
+writeFileSync(
+  resolve(ROOT, "src/generated/build-info.json"),
+  JSON.stringify({ commit, commitDate, builtAt: new Date().toISOString(), env: process.env.VERCEL_ENV ?? "local" }, null, 2) + "\n"
+);
 
 const c = graph.counts;
 console.log(

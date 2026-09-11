@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { css } from "../../../styled-system/css";
+import buildInfo from "@/generated/build-info.json";
 
 export default function Footer() {
   return (
@@ -342,7 +343,8 @@ export default function Footer() {
               marginBottom: "1rem",
             })}
           >
-            © 2026 LACTIVAE™. All rights reserved. This is a portfolio project.
+            © 2026 LACTIVAE™. All rights reserved. This is a portfolio project. As of {asOf(buildInfo.commitDate)}{" "}
+            <span className={css({ fontFamily: "mono", fontSize: "xs", opacity: 0.7 })}>({buildInfo.commit})</span>
           </p>
           <div
             className={css({
@@ -372,4 +374,11 @@ export default function Footer() {
       </div>
     </footer>
   );
+}
+
+/** "2026-09-11T10:05:12-04:00" → "9/11/2026", using the committer's own date, not the build server's */
+function asOf(iso: string): string {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return iso;
+  return `${Number(m[2])}/${Number(m[3])}/${m[1]}`;
 }
