@@ -4,7 +4,13 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { trace } from "@/lib/graph";
 import type { Proposal } from "@/lib/proposals/types";
 
-export type XRayMode = "off" | "overlay";
+/**
+ * off        — public experience, nothing rendered
+ * overlay    — outlines and connectors drawn over the live page
+ * exploded   — the page decomposed into a cluster map (ExplodeView)
+ * collapsing — ExplodeView animating back into the page before returning to overlay
+ */
+export type XRayMode = "off" | "overlay" | "exploded" | "collapsing";
 export type XRayEnv = "production" | "staging";
 
 interface XRayState {
@@ -18,6 +24,8 @@ interface XRayState {
   staged: Proposal[];
   setMode: (mode: XRayMode) => void;
   toggle: () => void;
+  explode: () => void;
+  collapse: () => void;
   select: (nodeId: string | null) => void;
   setEnv: (env: XRayEnv) => void;
   setStaged: (proposals: Proposal[]) => void;
@@ -45,10 +53,12 @@ export function XRayStoreProvider({ children }: { children: ReactNode }) {
     setMode((m) => (m === "off" ? "overlay" : "off"));
     setSelectedId(null);
   }, []);
+  const explode = useCallback(() => setMode((m) => (m === "off" || m === "overlay" ? "exploded" : m)), []);
+  const collapse = useCallback(() => setMode((m) => (m === "exploded" ? "collapsing" : m)), []);
 
   const value = useMemo<XRayState>(
-    () => ({ mode, selectedId, lit, env, staged, setMode, toggle, select, setEnv, setStaged }),
-    [mode, selectedId, lit, env, staged, toggle, select]
+    () => ({ mode, selectedId, lit, env, staged, setMode, toggle, explode, collapse, select, setEnv, setStaged }),
+    [mode, selectedId, lit, env, staged, toggle, explode, collapse, select]
   );
 
   return <XRayContext.Provider value={value}>{children}</XRayContext.Provider>;

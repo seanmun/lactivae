@@ -6,7 +6,7 @@ import type { Session } from "@/lib/auth-shared";
 import { useXRay } from "./store";
 
 export default function XRayToggle({ session }: { session: Session }) {
-  const { mode, toggle, env, setEnv, staged } = useXRay();
+  const { mode, toggle, env, setEnv, staged, explode, collapse } = useXRay();
   const on = mode !== "off";
   const stagedCount = staged.length;
 
@@ -21,6 +21,7 @@ export default function XRayToggle({ session }: { session: Session }) {
         alignItems: "center",
         gap: "0.5rem",
       })}
+      data-xray-ui="toggle"
     >
       <button
         type="button"
@@ -56,6 +57,35 @@ export default function XRayToggle({ session }: { session: Session }) {
         </svg>
         X-ray {on ? "on" : "off"}
       </button>
+      {on && (
+        <button
+          type="button"
+          onClick={mode === "exploded" ? collapse : explode}
+          disabled={mode === "collapsing"}
+          aria-pressed={mode === "exploded"}
+          title={mode === "exploded" ? "Collapse back into the page (Esc)" : "Explode the page into its governed objects"}
+          className={css({
+            fontFamily: "mono",
+            fontSize: "xs",
+            fontWeight: "700",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            padding: "0.55rem 0.85rem",
+            borderRadius: "999px",
+            border: "2px solid",
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+            bg: mode === "exploded" ? "#F9E8D4" : "bg.primary",
+            color: "accent.primary",
+            borderColor: mode === "exploded" ? "#93C5FD" : "border.medium",
+            _hover: { borderColor: "accent.secondary" },
+            _disabled: { opacity: 0.6, cursor: "wait" },
+            _focusVisible: { outline: "3px solid #93C5FD", outlineOffset: "2px" },
+          })}
+        >
+          {mode === "exploded" ? "Collapse" : mode === "collapsing" ? "…" : "Explode"}
+        </button>
+      )}
       {stagedCount > 0 && (
         <div
           role="group"

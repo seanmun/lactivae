@@ -31,3 +31,23 @@ body[data-xray-env="staging"] [data-staged="true"] {
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* explode "loosen" phase: seams appear and components ease apart before the cards fly out */
+body[data-xray-phase="loosen"] [data-component] {
+  transform: scale(0.985);
+  outline: 1px dashed rgba(61, 45, 34, 0.45);
+  outline-offset: 6px;
+  transition: transform 0.35s ease-out, outline-color 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-xray-phase="loosen"] [data-component] { transition: none; transform: none; }
+}
+
+@keyframes xray-layer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes xray-layer-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

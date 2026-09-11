@@ -9,9 +9,10 @@ import XRayToggle from "./XRayToggle";
 import XRayOverlay from "./XRayOverlay";
 import Inspector from "./Inspector";
 import StagingOverlay from "./StagingOverlay";
+import ExplodeView from "./ExplodeView";
 
 function XRayShell({ session }: { session: Session }) {
-  const { mode, selectedId, select, setMode, setStaged, setEnv } = useXRay();
+  const { mode, selectedId, select, setMode, setStaged, setEnv, explode, collapse } = useXRay();
   const params = useSearchParams();
 
   // Deep link: ?env=staging previews staged proposals in place.
@@ -43,6 +44,10 @@ function XRayShell({ session }: { session: Session }) {
     if (wanted.includes(":") && getNode(wanted)) {
       // wait a frame so governed elements are measured before the trace lights up
       requestAnimationFrame(() => select(wanted));
+    }
+    if (wanted === "explode" || params.get("view") === "explode") {
+      // let the overlay measure the page first, then fly the cards out of it
+      window.setTimeout(() => explode(), 350);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -76,19 +81,22 @@ function XRayShell({ session }: { session: Session }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && mode !== "off") {
         e.preventDefault();
-        if (selectedId) select(null);
+        if (mode === "exploded") collapse();
+        else if (mode === "collapsing") return;
+        else if (selectedId) select(null);
         else setMode("off");
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [mode, selectedId, select, setMode]);
+  }, [mode, selectedId, select, setMode, collapse]);
 
   return (
     <>
       <XRayToggle session={session} />
       <StagingOverlay />
-      {mode !== "off" && <XRayOverlay />}
+      {mode === "overlay" && <XRayOverlay />}
+      {(mode === "exploded" || mode === "collapsing") && <ExplodeView />}
       {mode !== "off" && <Inspector />}
     </>
   );
