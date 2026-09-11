@@ -88,8 +88,8 @@ export default function Header() {
             src="/logos/lactivae-mark.png"
             alt=""
             aria-hidden="true"
-            width={170}
-            height={132}
+            width={505}
+            height={393}
             priority
             className={css({
               display: "block",

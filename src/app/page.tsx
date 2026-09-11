@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { css } from "../../styled-system/css";
 import Claim, { governedAttrs } from "@/components/governed/Claim";
 import Safety from "@/components/governed/Safety";
@@ -51,6 +52,22 @@ export default function Home() {
             padding: "4rem 2rem",
           })}
         >
+          {/* Brand mark above the wordmark, echoing the logo lockup */}
+          <Image
+            src="/logos/lactivae-mark.png"
+            alt=""
+            aria-hidden="true"
+            width={505}
+            height={393}
+            priority
+            className={css({
+              display: "block",
+              width: "auto",
+              height: { base: "76px", md: "108px" },
+              margin: "0 auto 1rem",
+            })}
+          />
+
           <div
             className={css({
               lineHeight: "1",
