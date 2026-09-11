@@ -184,3 +184,15 @@ $$;
 
 create trigger profiles_touch  before update on public.profiles  for each row execute function public.touch_updated_at();
 create trigger proposals_touch before update on public.proposals for each row execute function public.touch_updated_at();
+
+-- ------------------------------------------------------------ API privileges
+-- Explicit grants so this migration works whether or not the project has
+-- "Automatically expose new tables" enabled. Row Level Security above is what
+-- actually gates access; these grants only decide which tables the Data API
+-- can see at all. `anon` gets nothing: every table here requires a session.
+grant usage on schema public to anon, authenticated;
+
+grant select, insert, update on public.profiles          to authenticated;
+grant select, insert, update, delete on public.email_preferences to authenticated;
+grant select, insert, update on public.proposals         to authenticated;
+grant select, insert         on public.audit_events      to authenticated;
