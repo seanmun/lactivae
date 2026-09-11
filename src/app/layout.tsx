@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ISI from "@/components/layout/ISI";
 import SpeedDial from "@/components/ui/SpeedDial";
+import XRayGate from "@/components/xray/XRayGate";
 import { css } from "../../styled-system/css";
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ export default function RootLayout({
         <Footer />
         <ISI />
         <SpeedDial />
+        <XRayGate />
       </body>
     </html>
   );

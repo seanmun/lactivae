@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { css } from "../../../styled-system/css";
+import Safety from "@/components/governed/Safety";
+import { safetyByGroup } from "@/data/safety";
 
 export default function ISI() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -49,6 +51,8 @@ export default function ISI() {
 
       {/* ISI Container */}
       <div
+        data-component="ISI"
+        data-layout-component
         className={css({
           position: "fixed",
           bottom: 0,
@@ -142,9 +146,9 @@ export default function ISI() {
                 color: "bg.primary",
               })}
             >
-            LACTIVAE™ (raw milk, oral solution) is not FDA approved. Raw milk may contain harmful bacteria.
-            Not recommended for children under 5, adults over 65, pregnant women,
-            or immunocompromised individuals.{" "}
+            <Safety id="reg-not-fda-approved" showRefs={false} />{" "}
+            <Safety id="risk-harmful-bacteria" showRefs={false} />{" "}
+            <Safety id="contra-summary" showRefs={false} />{" "}
             <span
               className={css({
                 textDecoration: "underline",
@@ -204,14 +208,9 @@ export default function ISI() {
                     },
                   })}
                 >
-                  <li>Children under age 5</li>
-                  <li>Adults over age 65</li>
-                  <li>Pregnant women</li>
-                  <li>
-                    People with weakened immune systems (HIV/AIDS, cancer
-                    treatment, transplant recipients, immunosuppressive
-                    medications)
-                  </li>
+                  {safetyByGroup("who-should-not").map((item) => (
+                    <Safety key={item.id} id={item.id} as="li" showRefs={false} />
+                  ))}
                 </ul>
               </section>
 
@@ -240,11 +239,7 @@ export default function ISI() {
                     marginBottom: "0.75rem",
                   })}
                 >
-                  Raw milk can contain harmful bacteria including{" "}
-                  <em>Campylobacter</em>, <em>Salmonella</em>,{" "}
-                  <em>E. coli O157:H7</em>, <em>Listeria monocytogenes</em>,
-                  and others. Symptoms may include diarrhea, stomach cramping,
-                  nausea, vomiting, and fever.
+                  <Safety id="risk-pathogens-symptoms" showRefs={false} />
                 </p>
                 <p
                   className={css({
@@ -253,9 +248,7 @@ export default function ISI() {
                     lineHeight: "1.6",
                   })}
                 >
-                  Serious complications, while rare, may include Hemolytic
-                  Uremic Syndrome (HUS), Guillain-Barré Syndrome (GBS),
-                  reactive arthritis, or miscarriage in pregnant women.
+                  <Safety id="risk-serious-complications" showRefs={false} />
                 </p>
               </section>
 
@@ -290,14 +283,9 @@ export default function ISI() {
                     },
                   })}
                 >
-                  <li>
-                    Purchase only from licensed, inspected producers who test
-                    regularly
-                  </li>
-                  <li>Keep refrigerated at 38-40°F (3-4°C) at all times</li>
-                  <li>Consume within 7-10 days of production</li>
-                  <li>Discard if off-odor or unusual taste</li>
-                  <li>Visit the farm and understand their practices</li>
+                  {safetyByGroup("risk-mitigation").map((item) => (
+                    <Safety key={item.id} id={item.id} as="li" showRefs={false} />
+                  ))}
                 </ul>
               </section>
 
@@ -325,14 +313,11 @@ export default function ISI() {
                     lineHeight: "1.6",
                   })}
                 >
-                  <strong>Federal:</strong> Sale of raw milk across state lines
-                  is prohibited by the FDA.
+                  <Safety id="reg-federal-interstate" showRefs={false} />
                   <br />
-                  <strong>State:</strong> Laws vary—legal retail sale in some
-                  states, farm sales only in others, completely illegal in some.
+                  <Safety id="reg-state-varies" showRefs={false} />
                   <br />
-                  <strong>International:</strong> Most developed countries
-                  recommend against raw milk consumption.
+                  <Safety id="reg-international" showRefs={false} />
                 </p>
               </section>
 

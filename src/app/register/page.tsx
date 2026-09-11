@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { css } from "../../../styled-system/css";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/auth-shared";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -20,11 +22,27 @@ export default function RegisterPage() {
     setMessage("");
 
     try {
-      // TODO: Implement Supabase magic link authentication
-      // This will be implemented after installing dependencies
+      if (!isSupabaseConfigured()) {
+        setMessage("Registration is not available in this environment yet.");
+        return;
+      }
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: formData.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/register?welcome=1")}`,
+          data: {
+            display_name: formData.displayName,
+            zip_code: formData.zipCode,
+            interest: formData.interest,
+            user_type: formData.userType,
+          },
+        },
+      });
+      if (error) throw error;
       setMessage("Check your email for a magic link to complete registration!");
     } catch (error) {
-      setMessage("An error occurred. Please try again.");
+      setMessage(error instanceof Error ? error.message : "An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

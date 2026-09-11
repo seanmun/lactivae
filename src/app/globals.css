@@ -2,3 +2,32 @@
 
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+/* ---- X-ray mode (admin only; body[data-xray] is set by components/xray) ---- */
+body[data-xray] [data-governed],
+body[data-xray] [data-component] {
+  transition: opacity 0.2s ease-out;
+}
+body[data-xray][data-xray-has-selection="true"] [data-governed]:not([data-xray-lit]):not([data-xray-selected]) {
+  opacity: 0.35;
+}
+body[data-xray] [data-governed] {
+  cursor: crosshair;
+}
+body[data-xray] [data-governed] a {
+  pointer-events: none;
+}
+/* visitor widgets step aside while the inspector is open */
+body[data-xray] [data-speed-dial] {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-xray] [data-governed] { transition: none; }
+}
+
+/* staging preview (admin only): proposed text swapped in place */
+body[data-xray-env="staging"] [data-staged="true"] {
+  outline: 2px dashed #6D28D9;
+  outline-offset: 3px;
+  border-radius: 4px;
+}

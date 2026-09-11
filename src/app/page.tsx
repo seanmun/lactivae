@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { css } from "../../styled-system/css";
+import Claim, { governedAttrs } from "@/components/governed/Claim";
+import Safety from "@/components/governed/Safety";
 import Ref from "@/components/ui/Ref";
+import { getClaim } from "@/data/claims";
 
 export default function Home() {
   return (
     <>
       {/* Hero Section */}
       <section
+        data-component="hero"
         className={css({
           position: "relative",
           display: "flex",
@@ -114,26 +118,22 @@ export default function Home() {
                 backdropFilter: "blur(10px)",
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="hero-asthma-42"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "3xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                42%
-              </div>
-              <div
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "sm",
                   color: "text.secondary",
                 })}
-              >
-                Lower odds of childhood asthma<Ref k="brick-2020" />
-              </div>
+              />
             </div>
 
             <div
@@ -147,26 +147,22 @@ export default function Home() {
                 backdropFilter: "blur(10px)",
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="hero-omega3-147"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "3xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                147%
-              </div>
-              <div
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "sm",
                   color: "text.secondary",
                 })}
-              >
-                More omega-3 in grass-fed milk<Ref k="benbrook-2018" />
-              </div>
+              />
             </div>
 
             <div
@@ -180,26 +176,22 @@ export default function Home() {
                 backdropFilter: "blur(10px)",
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="hero-respiratory-30"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "3xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                30%
-              </div>
-              <div
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "sm",
                   color: "text.secondary",
                 })}
-              >
-                Fewer respiratory infections in infants<Ref k="loss-2015" />
-              </div>
+              />
             </div>
           </div>
 
@@ -270,6 +262,7 @@ export default function Home() {
       >
         {/* Key Statistics Section */}
         <section
+          data-component="benefits"
           className={css({
             marginBottom: "4rem",
           })}
@@ -309,26 +302,22 @@ export default function Home() {
                 },
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="benefit-asthma-meta-or"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "4xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                42%
-              </div>
-              <div
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "base",
                   color: "text.secondary",
                 })}
-              >
-                Lower odds of childhood asthma (meta-analysis, OR 0.58)<Ref k="brick-2020" />
-              </div>
+              />
             </div>
 
             <div
@@ -346,26 +335,22 @@ export default function Home() {
                 },
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="benefit-omega3-vs-conventional"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "4xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                147%
-              </div>
-              <div
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "base",
                   color: "text.secondary",
                 })}
-              >
-                More omega-3 in grass-fed versus conventional milk<Ref k="benbrook-2018" />
-              </div>
+              />
             </div>
 
             <div
@@ -383,32 +368,29 @@ export default function Home() {
                 },
               })}
             >
-              <div
-                className={css({
+              <Claim
+                id="benefit-lifespan-celegans-63"
+                variant="stat"
+                headlineClassName={css({
                   fontFamily: "mono",
                   fontSize: "4xl",
                   fontWeight: "700",
                   color: "accent.secondary",
                   marginBottom: "0.5rem",
                 })}
-              >
-                63%
-              </div>
-              <div
-                className={css({
+                textClassName={css({
                   fontFamily: "body",
                   fontSize: "base",
                   color: "text.secondary",
                 })}
-              >
-                Longer maximum lifespan in <em>C. elegans</em> given raw-milk cheese extract<Ref k="cardin-2021" />
-              </div>
+              />
             </div>
           </div>
         </section>
 
         {/* Nutritional Comparison Section */}
         <section
+          data-component="comparison"
           className={css({
             marginBottom: "4rem",
           })}
@@ -436,9 +418,9 @@ export default function Home() {
               margin: "0 auto 3rem",
             })}
           >
-            Selected nutrients, LACTIVAE™ versus conventional store milk. Fatty-acid rows reflect grass-fed
-            versus conventional feeding, not pasteurization.<Ref k="benbrook-2018" /> Vitamin and bioactive rows
-            reflect heat treatment.<Ref k={["claeys-2013", "macdonald-2011", "peila-2016"]} />
+            Selected nutrients, LACTIVAE™ versus conventional store milk.{" "}
+            <Claim id="cmp-framing-fatty-acids" />{" "}
+            <Claim id="cmp-framing-heat" />
           </p>
 
           <div
@@ -497,115 +479,15 @@ export default function Home() {
               </h3>
             </div>
 
-            {/* Comparison Rows */}
-            {[
-              { nutrient: "Omega-3 fatty acids (per 100 g)", refs: "benbrook-2018", rawValue: "49 mg", advantage: "+147%", pastValue: "20 mg" },
-              { nutrient: "CLA (per 100 g)", refs: "benbrook-2018", rawValue: "43 mg", advantage: "+126%", pastValue: "19 mg" },
-              { nutrient: "Vitamin C (per 8 oz)", refs: ["claeys-2013", "macdonald-2011"], rawValue: "2.3 mg", advantage: "+35%", pastValue: "1.7 mg" },
-              { nutrient: "Folate (B9) (per 8 oz)", refs: ["claeys-2013", "macdonald-2011"], rawValue: "12 mcg", advantage: "+20%", pastValue: "10 mcg" },
-              { nutrient: "Vitamin B12 (per 8 oz)", refs: ["claeys-2013", "macdonald-2011"], rawValue: "1.1 mcg", advantage: "+10%", pastValue: "1.0 mcg" },
-              { nutrient: "Alkaline phosphatase", refs: "claeys-2013", rawValue: "Active", advantage: "Native", pastValue: "Inactivated" },
-              { nutrient: "Lactoferrin", refs: ["peila-2016", "haas-2025"], rawValue: "Intact", advantage: "Native", pastValue: "35–65% lower" },
-              { nutrient: "Live lactic acid bacteria", refs: ["claeys-2013", "butler-2020"], rawValue: "Present", advantage: "Live", pastValue: "Eliminated" },
-            ].map((item, index) => (
-              <>
-                {/* Raw Milk Side */}
-                <div
-                  key={`raw-${item.nutrient}`}
-                  className={css({
-                    padding: { base: "0.75rem", md: "1rem 1.5rem" },
-                    bg: "#ffffff",
-                    borderBottom: index < 7 ? "1px solid" : "none",
-                    borderBottomColor: "border.light",
-                    borderRight: "2px solid",
-                    borderRightColor: "border.medium",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5rem",
-                    minHeight: { base: "70px", md: "80px" },
-                    justifyContent: "center",
-                  })}
-                >
-                  <div
-                    className={css({
-                      fontFamily: "body",
-                      fontSize: { base: "xs", md: "sm" },
-                      fontWeight: "600",
-                      color: "accent.primary",
-                    })}
-                  >
-                    {item.nutrient}
-                    <Ref k={item.refs} />
-                  </div>
-                  <div
-                    className={css({
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      gap: "0.5rem",
-                    })}
-                  >
-                    <span
-                      className={css({
-                        fontFamily: "mono",
-                        fontSize: { base: "sm", md: "base" },
-                        fontWeight: "700",
-                        color: "text.primary",
-                      })}
-                    >
-                      {item.rawValue}
-                    </span>
-                    <span
-                      className={css({
-                        fontFamily: "mono",
-                        fontSize: { base: "xs", md: "sm" },
-                        fontWeight: "600",
-                        color: "accent.secondary",
-                      })}
-                    >
-                      {item.advantage}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Pasteurized Side */}
-                <div
-                  key={`past-${item.nutrient}`}
-                  className={css({
-                    padding: { base: "0.75rem", md: "1rem 1.5rem" },
-                    bg: "bg.secondary",
-                    borderBottom: index < 7 ? "1px solid" : "none",
-                    borderBottomColor: "border.light",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.5rem",
-                    minHeight: { base: "70px", md: "80px" },
-                    justifyContent: "center",
-                  })}
-                >
-                  <div
-                    className={css({
-                      fontFamily: "body",
-                      fontSize: { base: "xs", md: "sm" },
-                      fontWeight: "600",
-                      color: "text.muted",
-                    })}
-                  >
-                    {item.nutrient}
-                  </div>
-                  <span
-                    className={css({
-                      fontFamily: "mono",
-                      fontSize: { base: "sm", md: "base" },
-                      fontWeight: "600",
-                      color: "text.secondary",
-                    })}
-                  >
-                    {item.pastValue}
-                  </span>
-                </div>
-              </>
-            ))}
+            {/* Comparison Rows — one governed claim per row */}
+            <ComparisonRow claimId="cmp-omega3" index={0} />
+            <ComparisonRow claimId="cmp-cla" index={1} />
+            <ComparisonRow claimId="cmp-vitamin-c" index={2} />
+            <ComparisonRow claimId="cmp-folate" index={3} />
+            <ComparisonRow claimId="cmp-b12" index={4} />
+            <ComparisonRow claimId="cmp-alp" index={5} />
+            <ComparisonRow claimId="cmp-lactoferrin" index={6} />
+            <ComparisonRow claimId="cmp-lab" index={7} />
           </div>
 
           <div
@@ -650,6 +532,7 @@ export default function Home() {
 
         {/* Savings Card Section */}
         <section
+          data-component="savings"
           className={css({
             marginBottom: "4rem",
           })}
@@ -864,6 +747,7 @@ export default function Home() {
 
         {/* Inline ISI Section */}
         <section
+          data-component="isi-inline"
           className={css({
             bg: "bg.tertiary",
             border: "1px solid",
@@ -893,9 +777,8 @@ export default function Home() {
               marginBottom: "1rem",
             })}
           >
-            LACTIVAE™ (raw milk, oral solution) is not FDA approved. Raw milk may contain harmful
-            bacteria including <em>Campylobacter</em>, <em>Salmonella</em>, <em>E. coli O157:H7</em>,
-            and <em>Listeria monocytogenes</em>.<Ref k="fda-raw-milk" />
+            <Safety id="reg-not-fda-approved" showRefs={false} />{" "}
+            <Safety id="risk-pathogens-named" />
           </p>
           <p
             className={css({
@@ -906,8 +789,7 @@ export default function Home() {
               marginBottom: "1rem",
             })}
           >
-            <strong>Not recommended for:</strong> Children under 5, adults over 65, pregnant women,
-            or immunocompromised individuals.<Ref k="fda-raw-milk" />
+            <Safety id="contra-summary" />
           </p>
           <Link
             href="#isi"
@@ -927,6 +809,7 @@ export default function Home() {
 
         {/* CTA Section */}
         <section
+          data-component="cta"
           className={css({
             textAlign: "center",
             padding: "3rem 0",
@@ -1009,6 +892,114 @@ export default function Home() {
             </Link>
           </div>
         </section>
+      </div>
+    </>
+  );
+}
+
+/**
+ * One row of the LACTIVAE™ vs conventional milk table. Every value comes from the
+ * governed claim's structured data, so the table can never drift from approved copy.
+ */
+function ComparisonRow({ claimId, index }: { claimId: string; index: number }) {
+  const claim = getClaim(claimId);
+  const d = claim.data ?? {};
+  const refKeys = Array.from(new Set(claim.refs.map((r) => r.key)));
+  return (
+    <>
+      {/* Raw Milk Side */}
+      <div
+        {...governedAttrs(claim)}
+        className={css({
+          padding: { base: "0.75rem", md: "1rem 1.5rem" },
+          bg: "#ffffff",
+          borderBottom: index < 7 ? "1px solid" : "none",
+          borderBottomColor: "border.light",
+          borderRight: "2px solid",
+          borderRightColor: "border.medium",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+          minHeight: { base: "70px", md: "80px" },
+          justifyContent: "center",
+        })}
+      >
+        <div
+          className={css({
+            fontFamily: "body",
+            fontSize: { base: "xs", md: "sm" },
+            fontWeight: "600",
+            color: "accent.primary",
+          })}
+        >
+          {d.nutrient}
+          <Ref k={refKeys} />
+        </div>
+        <div
+          className={css({
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            gap: "0.5rem",
+          })}
+        >
+          <span
+            className={css({
+              fontFamily: "mono",
+              fontSize: { base: "sm", md: "base" },
+              fontWeight: "700",
+              color: "text.primary",
+            })}
+          >
+            {d.rawValue}
+          </span>
+          <span
+            className={css({
+              fontFamily: "mono",
+              fontSize: { base: "xs", md: "sm" },
+              fontWeight: "600",
+              color: "accent.secondary",
+            })}
+          >
+            {d.advantage}
+          </span>
+        </div>
+      </div>
+
+      {/* Pasteurized Side */}
+      <div
+        className={css({
+          padding: { base: "0.75rem", md: "1rem 1.5rem" },
+          bg: "bg.secondary",
+          borderBottom: index < 7 ? "1px solid" : "none",
+          borderBottomColor: "border.light",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.5rem",
+          minHeight: { base: "70px", md: "80px" },
+          justifyContent: "center",
+        })}
+      >
+        <div
+          className={css({
+            fontFamily: "body",
+            fontSize: { base: "xs", md: "sm" },
+            fontWeight: "600",
+            color: "text.muted",
+          })}
+        >
+          {d.nutrient}
+        </div>
+        <span
+          className={css({
+            fontFamily: "mono",
+            fontSize: { base: "sm", md: "base" },
+            fontWeight: "600",
+            color: "text.secondary",
+          })}
+        >
+          {d.pastValue}
+        </span>
       </div>
     </>
   );

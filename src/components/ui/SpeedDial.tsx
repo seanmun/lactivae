@@ -61,6 +61,7 @@ export default function SpeedDial() {
 
   return (
     <div
+      data-speed-dial
       className={css({
         position: "fixed",
         top: "1rem",

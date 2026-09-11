@@ -36,3 +36,12 @@ next-env.d.ts
 ## Panda
 styled-system
 styled-system-studio
+# Working docs (kept local for now)
+bigidea.MD
+docs/
+
+# Generated regulatory graph (built in prebuild)
+src/generated/graph.json
+
+# Local proposal store (dev bypass only)
+.rxweb/

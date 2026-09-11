@@ -39,6 +39,8 @@ export default function Ref({ k }: RefProps) {
               href={`/references#ref-${n}`}
               title={label}
               aria-label={`Reference ${n}: ${label}`}
+              data-governed="ref"
+              data-ref={key}
               className={css({
                 color: "accent.secondary",
                 textDecoration: "none",
