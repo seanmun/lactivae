@@ -33,14 +33,16 @@ body[data-xray-env="staging"] [data-staged="true"] {
 }
 
 /* explode "loosen" phase: seams appear and components ease apart before the cards fly out */
-body[data-xray-phase="loosen"] [data-component] {
+body[data-xray-phase="loosen"] [data-component],
+body[data-xray-phase="board"] [data-component] {
   transform: scale(0.985);
   outline: 1px dashed rgba(61, 45, 34, 0.45);
   outline-offset: 6px;
   transition: transform 0.35s ease-out, outline-color 0.35s ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  body[data-xray-phase="loosen"] [data-component] { transition: none; transform: none; }
+  body[data-xray-phase="loosen"] [data-component],
+  body[data-xray-phase="board"] [data-component] { transition: none; transform: none; }
 }
 
 @keyframes xray-layer-in {

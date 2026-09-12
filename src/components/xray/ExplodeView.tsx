@@ -9,15 +9,19 @@ import { getSafety } from "@/data/safety";
 import { getReference, shortCitation, ACCESS_LABELS } from "@/data/references";
 import { renderInline } from "@/components/governed/inline";
 import { useXRay } from "./store";
-import { collectGoverned, KIND_COLORS, STAGED_COLOR } from "./dom";
+import { KIND_COLORS, STAGED_COLOR } from "./dom";
 
 /**
- * The "explode": the current page decomposed into its governed objects.
- * Components become clusters in page order, claims and safety statements
- * become cards inside them, and every reference cited on the page gathers in
- * a column on the right. Cards fly out from their real on-page positions
- * (FLIP via the Web Animations API) and fly back on collapse. Inspect and
- * Trace are the same store as overlay mode, so selection carries across.
+ * The "explode": the current page decomposed onto a pan/zoom board, the way a
+ * design tool shows a whole file. Components become artboards in reading
+ * order, claims and safety statements become cards inside them, and every
+ * reference cited on the page stands in a column at the right.
+ *
+ * The board is one transformed layer, so zooming is cheap and connectors scale
+ * with the content. Geometry is measured in unscaled board coordinates
+ * (screen rect ÷ scale), keeping the maths independent of the zoom level.
+ * Inspect and Trace share the store with overlay mode, so a selection carries
+ * across when you explode or collapse.
  */
 
 interface Cluster {
@@ -26,15 +30,16 @@ interface Cluster {
   layout: boolean;
 }
 
-interface Placed {
-  nodeId: string;
+interface Box {
   x: number;
   y: number;
   w: number;
   h: number;
 }
 
-const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+const MIN_SCALE = 0.08;
+const MAX_SCALE = 2.5;
+const FIT_PADDING = 110;
 
 function uniqueById(nodes: GraphNode[]): GraphNode[] {
   const seen = new Set<string>();
@@ -77,67 +82,61 @@ function buildClusters(route: string): { clusters: Cluster[]; refs: GraphNode[];
   return { clusters, refs, edges };
 }
 
-const layer = css({
+// ------------------------------------------------------------------ styles
+const stage = css({
   position: "fixed",
   inset: 0,
   zIndex: 60,
-  overflowY: "auto",
-  overflowX: "hidden",
-  bg: "rgba(26, 19, 16, 0.96)",
-  backgroundImage: "radial-gradient(rgba(249, 232, 212, 0.07) 1px, transparent 1px)",
-  backgroundSize: "24px 24px",
-  animation: "xray-layer-in 0.35s ease-out both",
-  "&[data-closing='true']": { animation: "xray-layer-out 0.4s ease-in forwards" },
+  overflow: "hidden",
+  bg: "rgba(26, 19, 16, 0.97)",
+  backgroundImage: "radial-gradient(rgba(249, 232, 212, 0.09) 1px, transparent 1px)",
+  backgroundSize: "28px 28px",
+  cursor: "grab",
+  touchAction: "none",
+  animation: "xray-layer-in 0.3s ease-out both",
+  "&[data-panning='true']": { cursor: "grabbing" },
+  "&[data-closing='true']": { animation: "xray-layer-out 0.35s ease-in forwards" },
 });
-const wrap = css({
-  position: "relative",
-  maxWidth: "1400px",
-  margin: "0 auto",
-  padding: { base: "5.5rem 1rem 10rem", md: "5.5rem 2rem 10rem" },
-  paddingRight: { md: "calc(400px + 2rem)" },
-  display: "grid",
-  gridTemplateColumns: { base: "1fr", lg: "minmax(0, 1fr) 280px" },
-  gap: "2rem",
-  alignItems: "start",
-});
-const header = css({
-  position: "fixed",
-  top: "1rem",
-  left: "1rem",
-  zIndex: 62,
-  display: "flex",
-  alignItems: "center",
-  gap: "0.75rem",
-  flexWrap: "wrap",
-});
-const eyebrow = css({ fontFamily: "mono", fontSize: "xs", fontWeight: "700", letterSpacing: "0.12em", textTransform: "uppercase", color: "#F9E8D4", opacity: 0.9 });
-const pill = css({ fontFamily: "mono", fontSize: "xs", fontWeight: "700", letterSpacing: "0.12em", textTransform: "uppercase", color: "#F9E8D4", bg: "rgba(26, 19, 16, 0.92)", border: "1px solid rgba(249, 232, 212, 0.3)", padding: "0.45rem 0.8rem", borderRadius: "999px" });
-const clusterBox = css({
-  position: "relative",
-  border: "1px dashed rgba(249, 232, 212, 0.35)",
-  borderRadius: "14px",
-  padding: "2rem 1.25rem 1.25rem",
-  marginBottom: "1.5rem",
-  transition: "border-color 0.2s",
-  "&[data-lit='true']": { borderColor: "rgba(249, 232, 212, 0.9)" },
-});
-const clusterLabel = css({
+const board = css({
   position: "absolute",
-  top: "-0.6rem",
+  top: 0,
+  left: 0,
+  transformOrigin: "0 0",
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "72px",
+  padding: "40px",
+  willChange: "transform",
+});
+const artboards = css({ display: "flex", flexWrap: "wrap", gap: "48px", width: "1840px", alignContent: "flex-start" });
+const artboard = css({
+  position: "relative",
+  zIndex: 1,
+  width: "560px",
+  border: "1px dashed rgba(249, 232, 212, 0.32)",
+  borderRadius: "16px",
+  padding: "2.25rem 1.25rem 1.25rem",
+  transition: "border-color 0.2s, background 0.2s",
+  "&[data-lit='true']": { borderColor: "rgba(249, 232, 212, 0.95)", bg: "rgba(249, 232, 212, 0.04)" },
+});
+const artboardLabel = css({
+  position: "absolute",
+  top: "-0.7rem",
   left: "1rem",
   fontFamily: "mono",
-  fontSize: "xs",
+  fontSize: "13px",
   fontWeight: "700",
   letterSpacing: "0.1em",
   textTransform: "uppercase",
   color: "#F9E8D4",
   bg: "#3D2D22",
-  padding: "0.2rem 0.6rem",
+  padding: "0.25rem 0.7rem",
   borderRadius: "999px",
   cursor: "pointer",
   border: "1px solid rgba(249, 232, 212, 0.35)",
+  whiteSpace: "nowrap",
 });
-const grid = css({ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.9rem" });
+const grid = css({ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.9rem" });
 const card = css({
   textAlign: "left",
   bg: "bg.primary",
@@ -148,41 +147,60 @@ const card = css({
   cursor: "pointer",
   fontFamily: "body",
   boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
-  transition: "opacity 0.2s, transform 0.2s, box-shadow 0.2s",
-  willChange: "transform",
-  _hover: { transform: "translateY(-2px)", boxShadow: "0 12px 28px rgba(0, 0, 0, 0.45)" },
-  _focusVisible: { outline: "3px solid #93C5FD", outlineOffset: "2px" },
-  "&[data-dim='true']": { opacity: 0.28 },
-  "&[data-selected='true']": { boxShadow: "0 0 0 4px rgba(147, 197, 253, 0.6), 0 12px 28px rgba(0,0,0,0.45)" },
+  transition: "opacity 0.2s, box-shadow 0.2s",
+  "&[data-dim='true']": { opacity: 0.22 },
+  "&[data-selected='true']": { boxShadow: "0 0 0 4px rgba(147, 197, 253, 0.65), 0 12px 28px rgba(0,0,0,0.45)" },
 });
-const chip = css({ display: "inline-block", fontFamily: "mono", fontSize: "xs", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "#fff", padding: "0.1rem 0.45rem", borderRadius: "4px", marginBottom: "0.4rem" });
-const headline = css({ fontFamily: "mono", fontSize: "2xl", fontWeight: "700", color: "accent.secondary", lineHeight: "1.1", marginBottom: "0.2rem" });
-const cardText = css({ fontSize: "sm", lineHeight: "1.45", color: "text.primary" });
-const cardMeta = css({ fontFamily: "mono", fontSize: "xs", color: "text.muted", marginTop: "0.5rem" });
-const refsCol = css({ position: { lg: "sticky" }, top: { lg: "5.5rem" }, display: "flex", flexDirection: "column", gap: "0.6rem" });
+const chip = css({
+  display: "inline-block",
+  fontFamily: "mono",
+  fontSize: "11px",
+  fontWeight: "700",
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  color: "#fff",
+  padding: "0.1rem 0.45rem",
+  borderRadius: "4px",
+  marginBottom: "0.4rem",
+});
+const headline = css({ fontFamily: "mono", fontSize: "26px", fontWeight: "700", color: "accent.secondary", lineHeight: "1.1", marginBottom: "0.2rem" });
+const cardText = css({ fontSize: "14px", lineHeight: "1.45", color: "text.primary" });
+const cardMeta = css({ fontFamily: "mono", fontSize: "11px", color: "text.muted", marginTop: "0.5rem" });
+const refsCol = css({ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: "0.6rem", width: "300px", flexShrink: 0 });
 const refCard = css({
   textAlign: "left",
   bg: "rgba(255, 253, 245, 0.06)",
   color: "#F9E8D4",
-  border: "1.5px solid",
-  borderColor: "#1D4ED8",
+  border: "1.5px solid #1D4ED8",
   borderRadius: "8px",
   padding: "0.6rem 0.75rem",
   cursor: "pointer",
   fontFamily: "body",
   transition: "opacity 0.2s, background 0.2s",
-  _hover: { bg: "rgba(255, 253, 245, 0.12)" },
-  _focusVisible: { outline: "3px solid #93C5FD", outlineOffset: "2px" },
-  "&[data-dim='true']": { opacity: 0.28 },
-  "&[data-selected='true']": { bg: "rgba(29, 78, 216, 0.35)" },
+  "&[data-dim='true']": { opacity: 0.22 },
+  "&[data-selected='true']": { bg: "rgba(29, 78, 216, 0.4)" },
+});
+const bar = css({ position: "fixed", top: "1rem", left: "1rem", zIndex: 63, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" });
+const pill = css({
+  fontFamily: "mono",
+  fontSize: "xs",
+  fontWeight: "700",
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  color: "#F9E8D4",
+  bg: "rgba(26, 19, 16, 0.92)",
+  border: "1px solid rgba(249, 232, 212, 0.3)",
+  padding: "0.45rem 0.8rem",
+  borderRadius: "999px",
+  whiteSpace: "nowrap",
 });
 const btn = css({
   fontFamily: "mono",
   fontSize: "xs",
   fontWeight: "700",
-  letterSpacing: "0.08em",
+  letterSpacing: "0.06em",
   textTransform: "uppercase",
-  padding: "0.55rem 0.9rem",
+  padding: "0.45rem 0.75rem",
   borderRadius: "999px",
   border: "2px solid #93C5FD",
   bg: "#1D4ED8",
@@ -190,190 +208,294 @@ const btn = css({
   cursor: "pointer",
   _hover: { bg: "#2563EB" },
   _focusVisible: { outline: "3px solid #93C5FD", outlineOffset: "2px" },
+  _disabled: { opacity: 0.5, cursor: "wait" },
+});
+const zoomBtn = css({
+  fontFamily: "mono",
+  fontSize: "sm",
+  fontWeight: "700",
+  height: "34px",
+  minWidth: "34px",
+  padding: "0 0.55rem",
+  borderRadius: "8px",
+  border: "1px solid rgba(249, 232, 212, 0.3)",
+  bg: "rgba(26, 19, 16, 0.92)",
+  color: "#F9E8D4",
+  cursor: "pointer",
+  _hover: { borderColor: "#93C5FD" },
+  _focusVisible: { outline: "3px solid #93C5FD", outlineOffset: "2px" },
 });
 
 export default function ExplodeView() {
   const pathname = usePathname() || "/";
   const { mode, selectedId, lit, select, collapse, setMode, staged } = useXRay();
-  const layerRef = useRef<HTMLDivElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [placed, setPlaced] = useState<Placed[]>([]);
-  /** true once the fly-out animation has finished and card positions are final */
-  const [settled, setSettled] = useState(false);
-  const measureRef = useRef<() => void>(() => {});
+  const stageRef = useRef<HTMLDivElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
   const pageNode = getNode(`page:${pathname}`);
+
+  const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
+  const [ready, setReady] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const [boxes, setBoxes] = useState<Record<string, Box>>({});
+  const pan = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
+  const scaleRef = useRef(1);
+  scaleRef.current = view.scale;
 
   const { clusters, refs, edges } = useMemo(() => buildClusters(pathname), [pathname]);
   const stagedIds = useMemo(() => new Set(staged.filter((p) => p.objectKind === "claim").map((p) => `claim:${p.objectId}`)), [staged]);
 
-  const reduceMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  /** viewport rect of the first real on-page element for a node */
-  const realRects = useCallback(() => {
-    const map = new Map<string, DOMRect>();
-    for (const g of collectGoverned(pathname)) if (!map.has(g.nodeId)) map.set(g.nodeId, g.el.getBoundingClientRect());
-    return map;
-  }, [pathname]);
-
-  // ------------------------------------------------------------ enter (FLIP)
-  useLayoutEffect(() => {
-    if (mode !== "exploded") return;
-    const root = layerRef.current;
-    if (!root) return;
-    document.body.dataset.xrayPhase = "loosen";
-    const from = realRects();
-    const reduce = reduceMotion();
-    setSettled(false);
-    const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-explode-node]"));
-    const animations = cards.map((el, i) => {
-      const to = el.getBoundingClientRect();
-      const src = from.get(el.dataset.explodeNode!);
-      const keyframes: Keyframe[] = src
-        ? [
-            {
-              transform: `translate(${src.left - to.left}px, ${src.top - to.top}px) scale(${Math.max(src.width / to.width, 0.05)}, ${Math.max(src.height / to.height, 0.05)})`,
-              opacity: 0.35,
-            },
-            { transform: "none", opacity: 1 },
-          ]
-        : [{ transform: "translate(120px, 0) scale(0.9)", opacity: 0 }, { transform: "none", opacity: 1 }];
-      el.style.transformOrigin = "top left";
-      return el.animate(keyframes, { duration: reduce ? 0 : 700, delay: reduce ? 0 : Math.min(i * 12, 320), easing: EASE, fill: "backwards" });
-    });
-    let done = false;
-    const settle = () => {
-      if (done) return;
-      done = true;
-      measureRef.current();
-      setSettled(true);
-    };
-    Promise.all(animations.map((a) => a.finished.catch(() => undefined))).then(settle);
-    const fallback = window.setTimeout(settle, reduce ? 50 : 1300);
-    return () => window.clearTimeout(fallback);
-  }, [mode, realRects]);
-
-  // --------------------------------------------------------- collapse (FLIP)
-  useEffect(() => {
-    if (mode !== "collapsing") return;
-    setSettled(false);
-    const root = layerRef.current;
-    const to = realRects();
-    const reduce = reduceMotion();
-    const cards = root ? Array.from(root.querySelectorAll<HTMLElement>("[data-explode-node]")) : [];
-    const animations = cards.map((el, i) => {
-      const from = el.getBoundingClientRect();
-      const dst = to.get(el.dataset.explodeNode!);
-      const keyframes: Keyframe[] = dst
-        ? [
-            { transform: "none", opacity: 1 },
-            { transform: `translate(${dst.left - from.left}px, ${dst.top - from.top}px) scale(${dst.width / from.width}, ${dst.height / from.height})`, opacity: 0.2 },
-          ]
-        : [{ transform: "none", opacity: 1 }, { transform: "translate(120px, 0) scale(0.9)", opacity: 0 }];
-      el.style.transformOrigin = "top left";
-      return el.animate(keyframes, { duration: reduce ? 0 : 520, delay: reduce ? 0 : Math.min(i * 8, 200), easing: "cubic-bezier(0.5, 0, 0.75, 0)", fill: "forwards" });
-    });
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      delete document.body.dataset.xrayPhase;
-      setMode("overlay");
-    };
-    Promise.all(animations.map((a) => a.finished.catch(() => undefined))).then(finish);
-    const fallback = window.setTimeout(finish, reduce ? 50 : 900);
-    return () => window.clearTimeout(fallback);
-  }, [mode, realRects, setMode]);
-
-  useEffect(() => () => {
-    delete document.body.dataset.xrayPhase;
+  /** Visible stage area, minus the inspector panel on wide screens. */
+  const viewport = useCallback(() => {
+    const el = stageRef.current;
+    const w = el?.clientWidth ?? window.innerWidth;
+    const h = el?.clientHeight ?? window.innerHeight;
+    const inspector = typeof window !== "undefined" && window.matchMedia("(min-width: 48em)").matches ? 400 : 0;
+    return { w: Math.max(w - inspector, 320), h };
   }, []);
 
-  // ------------------------------------------------ connector measurement
+  /** Measure every card in unscaled board coordinates. */
+  const measure = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    const base = b.getBoundingClientRect();
+    const s = scaleRef.current || 1;
+    const next: Record<string, Box> = {};
+    b.querySelectorAll<HTMLElement>("[data-explode-node]").forEach((el) => {
+      const r = el.getBoundingClientRect();
+      next[el.dataset.explodeNode!] = { x: (r.left - base.left) / s, y: (r.top - base.top) / s, w: r.width / s, h: r.height / s };
+    });
+    setBoxes(next);
+  }, []);
+
+  /** Fit the whole board in view. */
+  const fit = useCallback(() => {
+    const b = boardRef.current;
+    if (!b) return;
+    const vp = viewport();
+    const bw = b.scrollWidth;
+    const bh = b.scrollHeight;
+    if (!bw || !bh) return;
+    const s = Math.max(Math.min((vp.w - FIT_PADDING) / bw, (vp.h - FIT_PADDING) / bh, MAX_SCALE), MIN_SCALE);
+    setView({ scale: s, x: (vp.w - bw * s) / 2, y: (vp.h - bh * s) / 2 });
+  }, [viewport]);
+
+  /** Zoom about a point in stage coordinates. */
+  const zoomTo = useCallback((next: number, cx?: number, cy?: number) => {
+    setView((v) => {
+      const s = Math.min(Math.max(next, MIN_SCALE), MAX_SCALE);
+      const el = stageRef.current;
+      const px = cx ?? (el ? el.clientWidth / 2 : 0);
+      const py = cy ?? (el ? el.clientHeight / 2 : 0);
+      return { scale: s, x: px - (px - v.x) * (s / v.scale), y: py - (py - v.y) * (s / v.scale) };
+    });
+  }, []);
+
+  /** Frame one artboard or card. */
+  const frame = useCallback(
+    (nodeId: string) => {
+      const box = boxes[nodeId];
+      if (!box) return;
+      const vp = viewport();
+      const s = Math.min(Math.max(Math.min((vp.w - 140) / box.w, (vp.h - 140) / box.h), MIN_SCALE), 1.4);
+      setView({ scale: s, x: vp.w / 2 - (box.x + box.w / 2) * s, y: vp.h / 2 - (box.y + box.h / 2) * s });
+    },
+    [boxes, viewport]
+  );
+
+  // ------------------------------------------------- first measure and fit
   useLayoutEffect(() => {
-    const wrapEl = wrapRef.current;
-    if (!wrapEl) return;
-    // Synchronous on purpose: called once the fly-out has settled, and from
-    // resize observers. No frame callback, so it cannot be starved.
-    const measure = () => {
-      const base = wrapEl.getBoundingClientRect();
-      const out: Placed[] = [];
-      wrapEl.querySelectorAll<HTMLElement>("[data-explode-node]").forEach((el) => {
-        const r = el.getBoundingClientRect();
-        out.push({ nodeId: el.dataset.explodeNode!, x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height });
-      });
-      setPlaced(out);
+    if (mode !== "exploded") return;
+    const b = boardRef.current;
+    if (!b) return;
+    document.body.dataset.xrayPhase = "board";
+    measure();
+    fit();
+    setReady(true);
+    const ro = new ResizeObserver(() => {
+      measure();
+    });
+    ro.observe(b);
+    const onResize = () => {
+      measure();
+      fit();
     };
-    measureRef.current = measure;
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(wrapEl);
-    window.addEventListener("resize", measure);
+    window.addEventListener("resize", onResize);
     return () => {
       ro.disconnect();
-      window.removeEventListener("resize", measure);
+      window.removeEventListener("resize", onResize);
     };
-  }, [clusters, refs]);
+  }, [mode, clusters, refs, measure, fit]);
 
-  const firstBox = useMemo(() => {
-    const m = new Map<string, Placed>();
-    for (const p of placed) if (!m.has(p.nodeId)) m.set(p.nodeId, p);
-    return m;
-  }, [placed]);
+  // a selection can arrive before the first measure (deep link); re-measure once
+  useEffect(() => {
+    if (mode === "exploded" && Object.keys(boxes).length === 0) measure();
+  }, [mode, boxes, measure]);
 
-  const wrapSize = useMemo(() => {
-    let w = 0;
-    let h = 0;
-    for (const p of placed) {
-      w = Math.max(w, p.x + p.w);
-      h = Math.max(h, p.y + p.h);
-    }
-    return { w, h };
-  }, [placed]);
+  useEffect(() => {
+    if (mode !== "collapsing") return;
+    const t = window.setTimeout(() => {
+      delete document.body.dataset.xrayPhase;
+      setMode("overlay");
+    }, 320);
+    return () => window.clearTimeout(t);
+  }, [mode, setMode]);
+
+  useEffect(
+    () => () => {
+      delete document.body.dataset.xrayPhase;
+    },
+    []
+  );
+
+  // ------------------------------------------------------------ wheel/pinch
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el || mode !== "exploded") return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      if (e.ctrlKey || e.metaKey) {
+        // trackpad pinch arrives as ctrl+wheel
+        zoomTo(scaleRef.current * Math.exp(-e.deltaY * 0.01), e.clientX - r.left, e.clientY - r.top);
+      } else {
+        setView((v) => ({ ...v, x: v.x - e.deltaX, y: v.y - e.deltaY }));
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [mode, zoomTo]);
+
+  // ------------------------------------------------------------- shortcuts
+  useEffect(() => {
+    if (mode !== "exploded") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key;
+      if (k === "0") {
+        e.preventDefault();
+        fit();
+      } else if (k === "1") {
+        e.preventDefault();
+        zoomTo(1);
+      } else if (k === "=" || k === "+") {
+        e.preventDefault();
+        zoomTo(scaleRef.current * 1.25);
+      } else if (k === "-" || k === "_") {
+        e.preventDefault();
+        zoomTo(scaleRef.current / 1.25);
+      } else if (k === "f" && selectedId) {
+        e.preventDefault();
+        frame(selectedId);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mode, fit, zoomTo, frame, selectedId]);
+
+  // ------------------------------------------------------------------- pan
+  const onPointerDown = (e: React.PointerEvent) => {
+    if ((e.target as Element).closest("[data-explode-node], [data-xray-ui='explode-bar']")) return;
+    pan.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
+    setIsPanning(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    const p = pan.current;
+    if (!p) return;
+    setView((v) => ({ ...v, x: p.vx + (e.clientX - p.x), y: p.vy + (e.clientY - p.y) }));
+  };
+  const endPan = () => {
+    if (!pan.current) return;
+    pan.current = null;
+    setIsPanning(false);
+  };
 
   const isLit = (id: string) => selectedId !== null && (id === selectedId || lit.has(id));
   const isDim = (id: string) => selectedId !== null && !isLit(id);
 
-  function connectorPath(a: Placed, b: Placed): string {
-    // leave from the right edge of a, arrive at the left edge of b (or vice versa)
+  function connector(a: Box, b: Box): string {
     const leftToRight = a.x + a.w <= b.x;
     const p = leftToRight ? { x: a.x + a.w, y: a.y + a.h / 2 } : { x: a.x + a.w / 2, y: a.y + a.h };
     const q = leftToRight ? { x: b.x, y: b.y + b.h / 2 } : { x: b.x + b.w / 2, y: b.y };
-    const dx = leftToRight ? Math.max((q.x - p.x) * 0.5, 40) : 0;
-    const dy = leftToRight ? 0 : Math.max((q.y - p.y) * 0.5, 40);
+    const dx = leftToRight ? Math.max((q.x - p.x) * 0.45, 48) : 0;
+    const dy = leftToRight ? 0 : Math.max((q.y - p.y) * 0.45, 48);
     return `M ${p.x} ${p.y} C ${p.x + dx} ${p.y + dy}, ${q.x - dx} ${q.y - dy}, ${q.x} ${q.y}`;
   }
 
+  const boardSize = useMemo(() => {
+    let w = 0;
+    let h = 0;
+    for (const b of Object.values(boxes)) {
+      w = Math.max(w, b.x + b.w);
+      h = Math.max(h, b.y + b.h);
+    }
+    return { w: w + 80, h: h + 80 };
+  }, [boxes]);
+
   return (
     <div
-      ref={layerRef}
+      ref={stageRef}
       data-xray-ui="explode"
       data-closing={mode === "collapsing" ? "true" : "false"}
-      className={layer}
+      data-panning={isPanning ? "true" : "false"}
+      className={stage}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endPan}
+      onPointerCancel={endPan}
       onClick={(e) => {
         if (e.target === e.currentTarget) select(null);
       }}
     >
-      <div className={header} data-xray-ui="explode-header">
-        <span className={pill}>X-ray · Exploded · {pageNode?.label ?? pathname}</span>
+      <div className={bar} data-xray-ui="explode-bar">
+        <span className={pill}>X-ray · Board · {pageNode?.label ?? pathname}</span>
         <button type="button" className={btn} onClick={collapse} disabled={mode === "collapsing"}>
           Collapse (Esc)
         </button>
+        <button type="button" className={zoomBtn} onClick={() => zoomTo(scaleRef.current / 1.25)} aria-label="Zoom out" title="Zoom out (−)">
+          −
+        </button>
+        <span className={pill} style={{ minWidth: 64, textAlign: "center" }}>
+          {Math.round(view.scale * 100)}%
+        </span>
+        <button type="button" className={zoomBtn} onClick={() => zoomTo(scaleRef.current * 1.25)} aria-label="Zoom in" title="Zoom in (+)">
+          +
+        </button>
+        <button type="button" className={zoomBtn} onClick={fit} title="Fit board (0)">
+          Fit
+        </button>
+        <button type="button" className={zoomBtn} onClick={() => zoomTo(1)} title="Actual size (1)">
+          1:1
+        </button>
+        {selectedId && (
+          <button type="button" className={zoomBtn} onClick={() => frame(selectedId)} title="Frame selection (F)">
+            Frame
+          </button>
+        )}
         <span className={pill} style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>
-          {selectedId ? `${lit.size} connected` : "Click a card to trace it"}
+          {selectedId ? `${lit.size} connected` : "Drag to pan · pinch or ⌘-scroll to zoom · double-click to frame"}
         </span>
       </div>
 
-      <div ref={wrapRef} className={wrap}>
-        {/* connectors: faint for every evidence / fair-balance edge, strong for the trace */}
+      <div
+        ref={boardRef}
+        className={board}
+        style={{
+          transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
+          opacity: ready ? 1 : 0,
+          transition: isPanning ? "none" : "opacity 0.25s ease-out",
+        }}
+      >
+        {/* connectors, drawn in unscaled board coordinates */}
         <svg
           aria-hidden="true"
-          width={wrapSize.w}
-          height={wrapSize.h}
-          className={css({ position: "absolute", top: 0, left: 0, pointerEvents: "none", overflow: "visible", zIndex: 0, transition: "opacity 0.3s" })}
-          style={{ opacity: settled ? 1 : 0 }}
+          width={boardSize.w}
+          height={boardSize.h}
+          className={css({ position: "absolute", top: 0, left: 0, pointerEvents: "none", overflow: "visible", zIndex: 0 })}
         >
           {edges.map((e, i) => {
-            const a = firstBox.get(e.from);
-            const b = firstBox.get(e.to);
+            const a = boxes[e.from];
+            const b = boxes[e.to];
             if (!a || !b) return null;
             const strong = selectedId !== null && (e.from === selectedId || e.to === selectedId);
             const faded = selectedId !== null && !strong;
@@ -381,23 +503,28 @@ export default function ExplodeView() {
             return (
               <path
                 key={i}
-                d={connectorPath(a, b)}
+                d={connector(a, b)}
                 fill="none"
                 stroke={color}
-                strokeWidth={strong ? 2.25 : 1}
-                strokeDasharray={e.rel === "balanced_by" ? "5 4" : undefined}
-                opacity={strong ? 0.95 : faded ? 0.06 : 0.28}
+                strokeWidth={strong ? 2.5 : 1}
+                strokeDasharray={e.rel === "balanced_by" ? "6 5" : undefined}
+                opacity={strong ? 0.95 : faded ? 0.05 : 0.24}
               />
             );
           })}
         </svg>
 
-        {/* clusters in page order */}
-        <div className={css({ position: "relative", zIndex: 1 })}>
+        <div className={artboards}>
           {clusters.map((cl) => (
-            <section key={cl.component.id} className={clusterBox} data-lit={isLit(cl.component.id) || cl.component.id === selectedId ? "true" : "false"}>
-              <button type="button" className={clusterLabel} data-explode-node={cl.component.id} onClick={() => select(cl.component.id)}>
-                {cl.layout ? "layout" : "component"} · {cl.component.label}
+            <section key={cl.component.id} className={artboard} data-lit={isLit(cl.component.id) ? "true" : "false"}>
+              <button
+                type="button"
+                className={artboardLabel}
+                data-explode-node={cl.component.id}
+                onClick={() => select(cl.component.id)}
+                onDoubleClick={() => frame(cl.component.id)}
+              >
+                {cl.layout ? "layout" : "component"} · {cl.component.label} · {cl.items.length}
               </button>
               <div className={grid}>
                 {cl.items.map((n) => {
@@ -408,20 +535,18 @@ export default function ExplodeView() {
                   const refNums = edgesFrom(n.id, "supported_by")
                     .map((e) => getNode(e.to)?.number)
                     .filter((x): x is number => typeof x === "number");
+                  const common = {
+                    "data-explode-node": n.id,
+                    "data-dim": isDim(n.id) ? "true" : "false",
+                    "data-selected": selectedId === n.id ? "true" : "false",
+                    onClick: () => select(selectedId === n.id ? null : n.id),
+                    onDoubleClick: () => frame(n.id),
+                  };
                   if (kind === "claim") {
                     const c = getClaim(id);
                     const stagedText = staged.find((p) => p.objectKind === "claim" && p.objectId === id)?.proposedText;
                     return (
-                      <button
-                        key={n.id}
-                        type="button"
-                        className={card}
-                        style={{ borderColor: color }}
-                        data-explode-node={n.id}
-                        data-dim={isDim(n.id) ? "true" : "false"}
-                        data-selected={selectedId === n.id ? "true" : "false"}
-                        onClick={() => select(selectedId === n.id ? null : n.id)}
-                      >
+                      <button key={n.id} type="button" className={card} style={{ borderColor: color }} {...common}>
                         <span className={chip} style={{ background: color }}>
                           {isStaged ? "Staged" : "Claim"}
                         </span>
@@ -436,16 +561,7 @@ export default function ExplodeView() {
                   }
                   const s = getSafety(id);
                   return (
-                    <button
-                      key={n.id}
-                      type="button"
-                      className={card}
-                      style={{ borderColor: color }}
-                      data-explode-node={n.id}
-                      data-dim={isDim(n.id) ? "true" : "false"}
-                      data-selected={selectedId === n.id ? "true" : "false"}
-                      onClick={() => select(selectedId === n.id ? null : n.id)}
-                    >
+                    <button key={n.id} type="button" className={card} style={{ borderColor: color }} {...common}>
                       <span className={chip} style={{ background: color }}>
                         Safety · {s.kind}
                       </span>
@@ -459,9 +575,20 @@ export default function ExplodeView() {
           ))}
         </div>
 
-        {/* references column */}
         <aside className={refsCol} aria-label="References cited on this page">
-          <span className={eyebrow}>References on this page · {refs.length}</span>
+          <span
+            className={css({
+              fontFamily: "mono",
+              fontSize: "13px",
+              fontWeight: "700",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "#F9E8D4",
+              opacity: 0.9,
+            })}
+          >
+            References · {refs.length}
+          </span>
           {refs.map((n) => {
             const key = bareId(n.id);
             const ref = getReference(key);
@@ -474,12 +601,15 @@ export default function ExplodeView() {
                 data-dim={isDim(n.id) ? "true" : "false"}
                 data-selected={selectedId === n.id ? "true" : "false"}
                 onClick={() => select(selectedId === n.id ? null : n.id)}
+                onDoubleClick={() => frame(n.id)}
               >
-                <div className={css({ fontFamily: "mono", fontSize: "xs", fontWeight: "700", color: "#93C5FD" })}>
+                <div className={css({ fontFamily: "mono", fontSize: "11px", fontWeight: "700", color: "#93C5FD" })}>
                   [{n.number}] {ACCESS_LABELS[ref.access]}
                 </div>
-                <div className={css({ fontSize: "sm", fontWeight: "600", lineHeight: "1.3" })}>{shortCitation(ref)}</div>
-                <div className={css({ fontSize: "xs", opacity: 0.8, lineHeight: "1.35", marginTop: "0.15rem" })}>{ref.title.length > 80 ? `${ref.title.slice(0, 80)}…` : ref.title}</div>
+                <div className={css({ fontSize: "14px", fontWeight: "600", lineHeight: "1.3" })}>{shortCitation(ref)}</div>
+                <div className={css({ fontSize: "12px", opacity: 0.8, lineHeight: "1.35", marginTop: "0.15rem" })}>
+                  {ref.title.length > 76 ? `${ref.title.slice(0, 76)}…` : ref.title}
+                </div>
               </button>
             );
           })}
