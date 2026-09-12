@@ -39,7 +39,7 @@ function slugify(s: string): string {
  * workflow. Candidates come with page, verbatim quote and rationale; each can
  * be saved as a draft proposal for a NEW claim in one click.
  */
-export default function SuggestPanel({ refKey, refNumber }: { refKey: string; refNumber: number }) {
+export default function SuggestPanel({ refKey, refNumber, canWrite }: { refKey: string; refNumber: number; canWrite: boolean }) {
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const [busy, setBusy] = useState(false);
@@ -127,9 +127,13 @@ export default function SuggestPanel({ refKey, refNumber }: { refKey: string; re
                   </div>
                   <div className={css({ fontFamily: "body", fontSize: "base", fontWeight: "600", color: "accent.primary", marginTop: "0.2rem" })}>{c.label}</div>
                 </div>
-                <button type="button" className={ghost} disabled={saving !== null} onClick={() => draft(c, i)}>
-                  {saving === i ? "Creating…" : "Draft as new claim"}
-                </button>
+                {canWrite ? (
+                  <button type="button" className={ghost} disabled={saving !== null} onClick={() => draft(c, i)}>
+                    {saving === i ? "Creating…" : "Draft as new claim"}
+                  </button>
+                ) : (
+                  <span className={mono}>admin only</span>
+                )}
               </div>
               <p className={css({ fontFamily: "body", fontSize: "base", color: "text.primary", lineHeight: "1.55", marginTop: "0.5rem" })}>{c.text}</p>
               <p className={quote}>&ldquo;{c.quote}&rdquo;</p>

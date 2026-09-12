@@ -14,6 +14,8 @@ interface Props {
   /** approved object has moved past this proposal's base version */
   stale: boolean;
   hasPatch: boolean;
+  /** admins move proposals through the lifecycle; reviewers only read */
+  canWrite: boolean;
 }
 
 const LABELS: Record<ProposalStatus, string> = {
@@ -43,7 +45,7 @@ const btn = (tone: "primary" | "neutral" | "danger") =>
     _disabled: { opacity: 0.5, cursor: "not-allowed" },
   });
 
-export default function ProposalActions({ proposalId, status, allowed, blocking, stale, hasPatch }: Props) {
+export default function ProposalActions({ proposalId, status, allowed, blocking, stale, hasPatch, canWrite }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<ProposalStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,12 @@ export default function ProposalActions({ proposalId, status, allowed, blocking,
   return (
     <div>
       <div className={css({ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "center" })}>
-        {allowed.map((to) => {
+        {!canWrite && (
+          <span className={css({ fontFamily: "body", fontSize: "sm", color: "text.secondary" })}>
+            You have reviewer access: read-only. An admin moves change sets through the lifecycle.
+          </span>
+        )}
+        {canWrite && allowed.map((to) => {
           const reason = guard(to);
           const tone = to === "approved" || to === "staged" ? "primary" : to === "rejected" ? "danger" : "neutral";
           return (
@@ -95,7 +102,7 @@ export default function ProposalActions({ proposalId, status, allowed, blocking,
           <span className={css({ fontFamily: "mono", fontSize: "xs", color: "#14532D" })}>Approved · apply the patch and push to promote</span>
         )}
       </div>
-      {allowed.some((to) => guard(to)) && (
+      {canWrite && allowed.some((to) => guard(to)) && (
         <p className={css({ fontFamily: "body", fontSize: "sm", color: "text.muted", marginTop: "0.5rem" })}>
           {allowed.map((to) => guard(to)).filter(Boolean).join(" ")}
         </p>

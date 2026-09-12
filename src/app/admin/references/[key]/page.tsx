@@ -7,6 +7,7 @@ import { getSafety } from "@/data/safety";
 import { edgesTo, usagesOf, kindOf, bareId } from "@/lib/graph";
 import { index } from "@/lib/retrieval";
 import { getProposalStore } from "@/lib/proposals";
+import { getSession } from "@/lib/auth";
 import SuggestPanel from "@/components/admin/SuggestPanel";
 import StatusPill from "@/components/admin/StatusPill";
 
@@ -27,6 +28,7 @@ export default async function ReferencePage({ params }: { params: Promise<{ key:
   const usages = usagesOf(nodeId);
   const indexed = index.sources[key];
   const store = await getProposalStore();
+  const session = await getSession();
   const proposals = (await store.list()).filter((p) => p.sourceRef === key || p.proposedRefs.some((r) => r.key === key));
 
   return (
@@ -72,7 +74,7 @@ export default async function ReferencePage({ params }: { params: Promise<{ key:
         proposed with page and verbatim quote. Each becomes a <strong>draft</strong> proposal for a new claim; nothing is approved here.
       </p>
       {indexed ? (
-        <SuggestPanel refKey={key} refNumber={n} />
+        <SuggestPanel refKey={key} refNumber={n} canWrite={session?.role === "admin"} />
       ) : (
         <p className={body}>
           This source has no indexed text (paywalled without an abstract on file, a website, or a book). Add a PDF or abstract and run{" "}

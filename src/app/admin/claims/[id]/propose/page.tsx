@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 import { css } from "../../../../../../styled-system/css";
 import { claims } from "@/data/claims";
 import ProposeForm from "@/components/admin/ProposeForm";
+import { requireRole } from "@/lib/auth";
 
 const mono = css({ fontFamily: "mono", fontSize: "xs", color: "text.muted" });
 const link = css({ color: "accent.secondary", textDecoration: "underline", _hover: { color: "accent.warm" } });
 
 export default async function ProposePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  // Reviewers can read the whole graph; proposing is a governance action.
+  await requireRole(["admin"], `/admin/claims/${id}/propose`);
   const claim = claims.find((c) => c.id === id);
   if (!claim) notFound();
 

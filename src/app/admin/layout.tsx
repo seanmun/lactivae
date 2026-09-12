@@ -69,10 +69,35 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </nav>
           <span className={css({ fontFamily: "mono", fontSize: "xs", opacity: 0.85 })}>
             {session.email ?? session.userId} · {session.role}
+            {session.role === "reviewer" ? " · read-only" : ""}
             {session.devBypass ? " · dev bypass" : ""}
           </span>
         </div>
       </div>
+      {session.role === "reviewer" && (
+        <div
+          className={css({
+            bg: "bg.secondary",
+            borderBottom: "1px solid",
+            borderColor: "border.light",
+          })}
+        >
+          <p
+            className={css({
+              maxWidth: "1200px",
+              margin: "0 auto",
+              padding: "0.6rem 2rem",
+              fontFamily: "body",
+              fontSize: "sm",
+              color: "text.secondary",
+              lineHeight: "1.5",
+            })}
+          >
+            <strong>Reviewer access.</strong> You can explore the full regulatory graph: X-ray on any page, the exploded board, every
+            claim traced to its evidence, and every change set. Proposing and approving changes is reserved for admins.
+          </p>
+        </div>
+      )}
       <div className={css({ maxWidth: "1200px", margin: "0 auto", padding: { base: "1.5rem 1.25rem", md: "2.5rem 2rem" } })}>{children}</div>
     </div>
   );

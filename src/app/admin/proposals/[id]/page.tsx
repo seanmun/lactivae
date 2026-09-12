@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { css } from "../../../../../styled-system/css";
 import { getProposalStore, TRANSITIONS } from "@/lib/proposals";
+import { getSession } from "@/lib/auth";
 import { claims, type ClaimType } from "@/data/claims";
 import { blastRadius, newClaimRadius } from "@/lib/blast";
 import { buildClaimPatch } from "@/lib/patch";
@@ -20,6 +21,8 @@ const pre = css({ fontFamily: "mono", fontSize: "xs", lineHeight: "1.5", bg: "#1
 export default async function ProposalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const store = await getProposalStore();
+  const session = await getSession();
+  const canWrite = session?.role === "admin";
   const proposal = await store.get(id);
   if (!proposal || proposal.objectKind !== "claim") notFound();
 
@@ -88,7 +91,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ id: s
       <BlastPanel radius={radius} />
 
       <h2 className={h2}>Lifecycle</h2>
-      <ProposalActions proposalId={proposal.id} status={proposal.status} allowed={TRANSITIONS[proposal.status]} blocking={blocking} stale={stale} hasPatch={patch !== null} />
+      <ProposalActions proposalId={proposal.id} status={proposal.status} allowed={TRANSITIONS[proposal.status]} blocking={blocking} stale={stale} hasPatch={patch !== null} canWrite={canWrite} />
 
       {patch && (
         <>

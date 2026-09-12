@@ -7,6 +7,7 @@ import { getReference, referenceNumber, shortCitation } from "@/data/references"
 import { trace } from "@/lib/graph";
 import { renderInline } from "@/components/governed/inline";
 import { getProposalStore } from "@/lib/proposals";
+import { getSession } from "@/lib/auth";
 import StatusPill from "@/components/admin/StatusPill";
 
 const h2 = css({ fontFamily: "heading", fontSize: "xl", fontWeight: "700", color: "accent.primary", marginBottom: "0.75rem", marginTop: "2rem" });
@@ -23,6 +24,7 @@ export default async function ClaimInspectPage({ params }: { params: Promise<{ i
 
   const t = trace(`claim:${claim.id}`);
   const store = await getProposalStore();
+  const session = await getSession();
   const proposals = await store.list({ objectId: claim.id });
 
   return (
@@ -35,12 +37,14 @@ export default async function ClaimInspectPage({ params }: { params: Promise<{ i
       </p>
       <div className={css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", margin: "0.5rem 0 1.25rem" })}>
         <h1 className={css({ fontFamily: "heading", fontSize: "3xl", fontWeight: "700", color: "accent.primary" })}>{claim.label}</h1>
-        <Link
-          href={`/admin/claims/${claim.id}/propose`}
-          className={css({ fontFamily: "body", fontSize: "sm", fontWeight: "600", padding: "0.7rem 1.2rem", borderRadius: "6px", bg: "accent.primary", color: "bg.primary", textDecoration: "none", _hover: { bg: "accent.secondary" } })}
-        >
-          Propose change
-        </Link>
+        {session?.role === "admin" && (
+          <Link
+            href={`/admin/claims/${claim.id}/propose`}
+            className={css({ fontFamily: "body", fontSize: "sm", fontWeight: "600", padding: "0.7rem 1.2rem", borderRadius: "6px", bg: "accent.primary", color: "bg.primary", textDecoration: "none", _hover: { bg: "accent.secondary" } })}
+          >
+            Propose change
+          </Link>
+        )}
       </div>
 
       <div className={card}>
