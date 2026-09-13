@@ -4,9 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { css } from "../../../styled-system/css";
 import { useState } from "react";
+import { useSession } from "@/lib/auth-client";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { session } = useSession();
+  const signedIn = Boolean(session);
 
   return (
     <header
@@ -193,8 +196,22 @@ export default function Header() {
           >
             For Providers
           </Link>
+          {!signedIn && (
+            <Link
+              href="/auth/signin"
+              className={css({
+                fontFamily: "body",
+                fontSize: "base",
+                color: "text.secondary",
+                textDecoration: "none",
+                _hover: { color: "accent.secondary" },
+              })}
+            >
+              Sign in
+            </Link>
+          )}
           <Link
-            href="/register"
+            href={signedIn ? "/account" : "/register"}
             className={css({
               fontFamily: "body",
               fontSize: "base",
@@ -227,7 +244,7 @@ export default function Header() {
               <rect x="2" y="4" width="20" height="16" rx="2" />
               <path d="m2 7 10 7 10-7" />
             </svg>
-            Register
+            {signedIn ? "Account" : "Register"}
           </Link>
         </div>
       </nav>
@@ -314,8 +331,24 @@ export default function Header() {
             >
               For Providers
             </Link>
+            {!signedIn && (
+              <Link
+                href="/auth/signin"
+                onClick={() => setIsMenuOpen(false)}
+                className={css({
+                  fontFamily: "body",
+                  fontSize: "base",
+                  color: "text.secondary",
+                  textDecoration: "none",
+                  padding: "0.5rem",
+                  _hover: { color: "accent.secondary" },
+                })}
+              >
+                Sign in
+              </Link>
+            )}
             <Link
-              href="/register"
+              href={signedIn ? "/account" : "/register"}
               onClick={() => setIsMenuOpen(false)}
               className={css({
                 fontFamily: "body",
@@ -349,7 +382,7 @@ export default function Header() {
                 <rect x="2" y="4" width="20" height="16" rx="2" />
                 <path d="m2 7 10 7 10-7" />
               </svg>
-              Register
+              {signedIn ? "Account" : "Register"}
             </Link>
           </div>
         </div>

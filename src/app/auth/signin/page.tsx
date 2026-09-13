@@ -8,14 +8,14 @@ import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured, devBypassSession } from "@/lib/auth-shared";
 
 const REASONS: Record<string, string> = {
-  forbidden: "Your account does not have reviewer or admin access. Ask an administrator to update your role.",
+  forbidden: "That area needs X-ray access. Sign in and turn it on from your account — it takes one click.",
   error: "That sign-in link is invalid or has expired. Request a new one below.",
   unconfigured: "Supabase is not configured in this environment, so sign-in is unavailable.",
 };
 
 function SignInForm() {
   const params = useSearchParams();
-  const next = params.get("next") ?? "/admin";
+  const next = params.get("next") ?? "/account";
   const reason = params.get("reason");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -62,13 +62,20 @@ function SignInForm() {
           marginBottom: "0.75rem",
         })}
       >
-        Rx Web · Reviewer access
+        LACTIVAE™ · Sign in
       </p>
       <h1 className={css({ fontFamily: "heading", fontSize: "3xl", fontWeight: "700", color: "accent.primary", marginBottom: "0.75rem" })}>
         Sign in
       </h1>
-      <p className={css({ fontFamily: "body", fontSize: "base", color: "text.secondary", lineHeight: "1.6", marginBottom: "1.5rem" })}>
-        We&rsquo;ll email you a one-time sign-in link. Reviewer and admin roles unlock X-ray mode and the console.
+      <p className={css({ fontFamily: "body", fontSize: "base", color: "text.secondary", lineHeight: "1.6", marginBottom: "1rem" })}>
+        We&rsquo;ll email you a one-time sign-in link. No password to remember.
+      </p>
+      <p className={css({ fontFamily: "body", fontSize: "sm", color: "text.secondary", lineHeight: "1.6", marginBottom: "1.5rem" })}>
+        First time here?{" "}
+        <Link href="/register" className={css({ color: "accent.secondary", textDecoration: "underline", fontWeight: "600", _hover: { color: "accent.warm" } })}>
+          Register
+        </Link>{" "}
+        to choose your interests and whether you want X-ray access.
       </p>
 
       {reason && REASONS[reason] && (

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { css } from "../../../styled-system/css";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/auth-shared";
+import Link from "next/link";
+import InfoTip from "@/components/ui/InfoTip";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +14,7 @@ export default function RegisterPage() {
     zipCode: "",
     interest: "",
     userType: "consumer",
+    xrayOptIn: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,6 +39,7 @@ export default function RegisterPage() {
             zip_code: formData.zipCode,
             interest: formData.interest,
             user_type: formData.userType,
+            xray_opt_in: String(formData.xrayOptIn),
           },
         },
       });
@@ -122,6 +126,24 @@ export default function RegisterPage() {
           padding: "4rem 2rem",
         })}
       >
+        <p
+          className={css({
+            fontFamily: "body",
+            fontSize: "sm",
+            color: "text.secondary",
+            marginBottom: "1.5rem",
+          })}
+        >
+          Already registered?{" "}
+          <Link
+            href="/auth/signin"
+            className={css({ color: "accent.secondary", textDecoration: "underline", fontWeight: "600", _hover: { color: "accent.warm" } })}
+          >
+            Sign in with a magic link
+          </Link>{" "}
+          — no need to fill this out again.
+        </p>
+
         <form onSubmit={handleSubmit}>
           {/* US Only Notice */}
           <div
@@ -372,6 +394,68 @@ export default function RegisterPage() {
               <option value="savings">Deals & Savings</option>
               <option value="general">General Information</option>
             </select>
+          </div>
+
+          {/* X-ray opt-in */}
+          <div
+            className={css({
+              padding: "1.25rem 1.5rem",
+              bg: "bg.tertiary",
+              borderRadius: "6px",
+              marginBottom: "1.5rem",
+              border: "1px solid",
+              borderColor: "border.medium",
+            })}
+          >
+            <label
+              className={css({
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.75rem",
+                cursor: "pointer",
+              })}
+            >
+              <input
+                type="checkbox"
+                checked={formData.xrayOptIn}
+                onChange={(e) => setFormData({ ...formData, xrayOptIn: e.target.checked })}
+                className={css({ marginTop: "0.25rem", width: "1rem", height: "1rem", flexShrink: 0, cursor: "pointer" })}
+              />
+              <span>
+                <span
+                  className={css({
+                    display: "block",
+                    fontFamily: "body",
+                    fontSize: "base",
+                    fontWeight: "600",
+                    color: "accent.primary",
+                  })}
+                >
+                  Give me X-ray access
+                  <InfoTip label="What is X-ray mode?">
+                    <strong>X-ray</strong> reveals the regulatory machinery behind this site. Every claim, safety statement and
+                    reference is a governed object, and X-ray lets you outline them on the page, explode the whole page onto a
+                    zoomable board, and trace any statistic back to the exact passage in the study that supports it.
+                    <br />
+                    <br />
+                    It is read-only and changes nothing for other visitors. You can turn it on or off later from your account.
+                  </InfoTip>
+                </span>
+                <span
+                  className={css({
+                    display: "block",
+                    fontFamily: "body",
+                    fontSize: "sm",
+                    color: "text.secondary",
+                    lineHeight: "1.6",
+                    marginTop: "0.25rem",
+                  })}
+                >
+                  For anyone curious how a pharmaceutical-style site is actually governed: inspect the claims, trace the evidence,
+                  and explore the regulatory graph behind every page.
+                </span>
+              </span>
+            </label>
           </div>
 
           {/* Opt-in Language */}
