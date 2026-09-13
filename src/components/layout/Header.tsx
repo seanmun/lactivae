@@ -10,6 +10,13 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { session } = useSession();
   const signedIn = Boolean(session);
+  // Signed-in visitors see who they are: the local part of their email, kept
+  // short so a long address cannot push the nav around.
+  const accountName = (() => {
+    const local = session?.email?.split("@")[0] ?? "";
+    if (!local) return "Account";
+    return local.length > 14 ? `${local.slice(0, 13)}…` : local;
+  })();
 
   return (
     <header
@@ -212,6 +219,7 @@ export default function Header() {
           )}
           <Link
             href={signedIn ? "/account" : "/register"}
+            aria-label={signedIn ? "Your account" : "Register"}
             className={css({
               fontFamily: "body",
               fontSize: "base",
@@ -241,10 +249,19 @@ export default function Header() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="m2 7 10 7 10-7" />
+              {signedIn ? (
+                <>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </>
+              ) : (
+                <>
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="m2 7 10 7 10-7" />
+                </>
+              )}
             </svg>
-            {signedIn ? "Account" : "Register"}
+            {signedIn ? accountName : "Register"}
           </Link>
         </div>
       </nav>
@@ -349,6 +366,7 @@ export default function Header() {
             )}
             <Link
               href={signedIn ? "/account" : "/register"}
+              aria-label={signedIn ? "Your account" : "Register"}
               onClick={() => setIsMenuOpen(false)}
               className={css({
                 fontFamily: "body",
@@ -379,10 +397,19 @@ export default function Header() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m2 7 10 7 10-7" />
+                {signedIn ? (
+                  <>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </>
+                ) : (
+                  <>
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="m2 7 10 7 10-7" />
+                  </>
+                )}
               </svg>
-              {signedIn ? "Account" : "Register"}
+              {signedIn ? accountName : "Register"}
             </Link>
           </div>
         </div>
