@@ -1,260 +1,164 @@
-# LACTIVAE™ - Supabase & Resend Setup Guide
+# LACTIVAE™ — Supabase, Resend and Vercel setup
 
-This guide will help you set up authentication, database, and email functionality for the LACTIVAE™ platform.
+The runbook for standing this project up from scratch, and the reference for
+what is already configured. Steps marked **done** are live on the current
+project; they are recorded so the setup can be reproduced.
 
-## Prerequisites
+---
 
-- Node.js 18+ installed
-- A Supabase account (free tier works great)
-- A Resend account for email sending
+## 1. Supabase project — done
 
-## 1. Supabase Setup
+Project settings when creating:
 
-### Create a Supabase Project
+| Setting | Value | Why |
+|---|---|---|
+| Enable Data API | **on** | `supabase-js` talks to PostgREST |
+| Automatically expose new tables | **off** | Migrations grant explicitly, so exposure is reviewable |
+| Enable automatic RLS | **on** | Safety net: any table added later cannot ship wide open |
 
-1. Go to [supabase.com](https://supabase.com) and sign in
-2. Click "New Project"
-3. Fill in the details:
-   - **Name**: lactivae
-   - **Database Password**: (save this securely)
-   - **Region**: Choose closest to your users
-4. Click "Create new project" and wait for setup to complete
+### Migrations
 
-### Get Your API Keys
+Run in order in the SQL editor:
 
-1. Go to **Project Settings** > **API**
-2. Copy these values to your `.env.local` file:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon/public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY` (keep this secret!)
+1. `supabase/migrations/0001_rx_web.sql` — profiles with roles, proposals,
+   audit events, email preferences, RLS policies, triggers, and explicit
+   Data API grants
+2. `supabase/migrations/0002_new_claim_proposals.sql` — columns for the
+   create-claims workflow
+3. `supabase/migrations/0003_reviewer_by_default.sql` — new sign-ups become
+   reviewers; reading other people's profiles becomes admin-only
 
-### Create Database Tables
+### Verify
 
-Run these SQL commands in the **SQL Editor** (Supabase Dashboard):
+| File | Checks |
+|---|---|
+| `supabase/tests/rls-smoke-test.sql` | Eight row-level security assertions; all must pass |
+| `supabase/tests/verify-roles.sql` | Migration 0003 took effect |
+| `supabase/tests/verify-proposal-roundtrip.sql` | A proposal saved in the browser reached Postgres |
+
+---
+
+## 2. Roles
+
+| Role | Who | Can do |
+|---|---|---|
+| `admin` | set by hand in SQL | Propose, stage, approve, promote |
+| `reviewer` | **anyone who signs in** | X-ray, exploded board, inspect, trace, read change sets |
+| `anon` | not signed in | Public site only; no table access at all |
+
+Promote someone:
 
 ```sql
--- Create profiles table to store subscriber information
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  display_name TEXT NOT NULL,
-  zip_code TEXT NOT NULL,
-  interest TEXT NOT NULL,
-  user_type TEXT NOT NULL CHECK (user_type IN ('consumer', 'hcp')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
-);
-
--- Enable Row Level Security
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Create policy: Users can read their own profile
-CREATE POLICY "Users can view own profile"
-  ON profiles FOR SELECT
-  USING (auth.uid() = id);
-
--- Create policy: Users can update their own profile
-CREATE POLICY "Users can update own profile"
-  ON profiles FOR UPDATE
-  USING (auth.uid() = id);
-
--- Create policy: Users can insert their own profile
-CREATE POLICY "Users can insert own profile"
-  ON profiles FOR INSERT
-  WITH CHECK (auth.uid() = id);
-
--- Create email preferences table
-CREATE TABLE email_preferences (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
-  research_updates BOOLEAN DEFAULT TRUE,
-  educational_resources BOOLEAN DEFAULT TRUE,
-  local_partnerships BOOLEAN DEFAULT TRUE,
-  community_news BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  UNIQUE(user_id)
-);
-
--- Enable Row Level Security
-ALTER TABLE email_preferences ENABLE ROW LEVEL SECURITY;
-
--- Create policies for email_preferences
-CREATE POLICY "Users can view own email preferences"
-  ON email_preferences FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own email preferences"
-  ON email_preferences FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own email preferences"
-  ON email_preferences FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Create email history table (for storing sent emails)
-CREATE TABLE email_history (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
-  email_type TEXT NOT NULL,
-  subject TEXT NOT NULL,
-  html_content TEXT NOT NULL,
-  sent_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-  opened_at TIMESTAMP WITH TIME ZONE,
-  clicked_at TIMESTAMP WITH TIME ZONE
-);
-
--- Enable Row Level Security
-ALTER TABLE email_history ENABLE ROW LEVEL SECURITY;
-
--- Create policy: Users can view their own email history
-CREATE POLICY "Users can view own email history"
-  ON email_history FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Create indexes for better performance
-CREATE INDEX idx_profiles_user_type ON profiles(user_type);
-CREATE INDEX idx_profiles_interest ON profiles(interest);
-CREATE INDEX idx_profiles_zip_code ON profiles(zip_code);
-CREATE INDEX idx_email_history_user_id ON email_history(user_id);
-CREATE INDEX idx_email_history_sent_at ON email_history(sent_at DESC);
+update public.profiles set role = 'admin' where email = 'them@example.com';
 ```
 
-### Configure Email Templates
+`user_type` (consumer / hcp) is the marketing persona from the register form
+and is unrelated to `role`, which is the access level.
 
-1. Go to **Authentication** > **Email Templates**
-2. Customize the **Magic Link** template:
+---
 
-```html
-<h2>Welcome to LACTIVAE™</h2>
-<p>Click the link below to sign in to your account:</p>
-<p><a href="{{ .ConfirmationURL }}">Sign In to LACTIVAE™</a></p>
-<p>This link will expire in 1 hour.</p>
-<p>If you didn't request this email, you can safely ignore it.</p>
+## 3. Email — Resend as custom SMTP
+
+Supabase's built-in sender allows only a handful of messages per hour and has
+poor deliverability. Because any signed-in visitor becomes a reviewer, magic
+links must actually arrive.
+
+### 3a. Domain — done
+
+`lactivae.com` is verified in Resend. Three records live at GoDaddy:
+
+| Record | Host | Purpose |
+|---|---|---|
+| TXT | `send.lactivae.com` | SPF, chains to `amazonses.com` |
+| MX | `send.lactivae.com` | Bounce handling |
+| TXT | `resend._domainkey.lactivae.com` | DKIM |
+
+DKIM sits on the apex, so mail sends from `noreply@lactivae.com`. The
+`send.` subdomain is only the return path and is never shown to recipients.
+DMARC already exists from GoDaddy at `p=quarantine` with relaxed alignment,
+which this setup satisfies.
+
+Leave GoDaddy's `_domainconnect` CNAME in place. It is a discovery record for
+one-click DNS setup, grants nobody access, and removing it only creates manual
+work later.
+
+### 3b. Resend API key
+
+Resend → **API Keys** → **Create API Key**, sending permission. Copy it once.
+
+### 3c. Supabase SMTP
+
+**Authentication → Emails → SMTP Settings** → enable custom SMTP:
+
+| Field | Value |
+|---|---|
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | the Resend API key |
+| Sender email | `noreply@lactivae.com` |
+| Sender name | `LACTIVAE` |
+
+The sender address must be on the verified domain or Resend rejects the send.
+
+### 3d. Rate limit
+
+**Authentication → Rate Limits** → raise **Emails per hour** (100 is ample).
+Custom SMTP does not lift this on its own, and it is the setting that actually
+throttles a demo.
+
+---
+
+## 4. Auth URLs
+
+**Authentication → URL Configuration**
+
+- Site URL: `https://www.lactivae.com`
+- Redirect URLs:
+  - `http://localhost:3000/auth/callback`
+  - `https://www.lactivae.com/auth/callback`
+  - `https://lactivae.com/auth/callback`
+  - `https://lactivae.vercel.app/auth/callback`
+
+All four. The apex redirects to www, but a link generated against the bare
+domain still has to be on the allowlist or sign-in dead-ends.
+
+---
+
+## 5. Environment variables
+
+`.env.local` for development:
+
 ```
-
-### Configure Auth Settings
-
-1. Go to **Authentication** > **URL Configuration**
-2. Add your site URL:
-   - **Site URL**: `http://localhost:3000` (development) or your production URL
-   - **Redirect URLs**: Add `http://localhost:3000/auth/callback` and production URL
-
-## 2. Resend Setup
-
-### Create Resend Account
-
-1. Go to [resend.com](https://resend.com) and sign up
-2. Verify your email address
-
-### Get API Key
-
-1. Go to **API Keys** in your Resend dashboard
-2. Click **Create API Key**
-3. Name it "LACTIVAE Production" or "LACTIVAE Development"
-4. Copy the key to your `.env.local` file as `RESEND_API_KEY`
-
-### Configure Domain (Production)
-
-For production, you'll want to use your own domain:
-
-1. Go to **Domains** in Resend dashboard
-2. Click **Add Domain**
-3. Enter your domain (e.g., `lactivae.com`)
-4. Add the DNS records Resend provides to your domain registrar
-5. Wait for verification (usually takes a few minutes)
-6. Update `.env.local` with `RESEND_FROM_EMAIL=LACTIVAE <noreply@lactivae.com>`
-
-For development, you can use Resend's test domain: `onboarding@resend.dev`
-
-## 3. Environment Variables
-
-Create a `.env.local` file in your project root:
-
-```bash
-# Copy from .env.local.example and fill in your values
-cp .env.local.example .env.local
-```
-
-Then edit `.env.local` with your actual values:
-
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
-
-# Resend Configuration
-RESEND_API_KEY=re_your_api_key_here
-RESEND_FROM_EMAIL=LACTIVAE <noreply@yourdomain.com>
-
-# Application Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# optional: AI drafting, verification and claim suggestions
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-**⚠️ IMPORTANT**: Never commit `.env.local` to version control!
+The anon key is public by design; it ships in the browser bundle and RLS is
+what protects data. The `service_role` key is not used anywhere in this app
+and should never be added.
 
-## 4. Next Steps
+`NEXT_PUBLIC_XRAY_DEV_BYPASS=true` grants a local admin session without
+Supabase. Useful before auth exists; remove it once auth is configured or it
+will mask problems with the real flow. It has no effect in production builds.
 
-Now you need to implement the API routes for:
+Vercel production has the same three variables with
+`NEXT_PUBLIC_APP_URL=https://www.lactivae.com`. Environment changes do not
+trigger a rebuild; push a commit or redeploy.
 
-1. **Registration API** (`/api/auth/register`)
-   - Create user with Supabase Auth
-   - Insert profile data
-   - Create default email preferences
-   - Send welcome email via Resend
+---
 
-2. **Auth Callback** (`/app/auth/callback/route.ts`)
-   - Handle magic link callback
-   - Set session cookie
-   - Redirect to profile or home page
+## 6. Smoke test
 
-3. **Profile API** (`/api/profile`)
-   - Get user profile
-   - Update user profile
-   - Get/update email preferences
-
-4. **Email History API** (`/api/email/history`)
-   - Retrieve past emails sent to user
-   - Track opens and clicks
-
-## Testing
-
-1. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-2. Navigate to `http://localhost:3000/register`
-
-3. Fill out the form and submit
-
-4. Check your email for the magic link
-
-5. Click the link to complete registration
-
-## Troubleshooting
-
-### Magic Link Not Sending
-
-- Check Supabase **Authentication** > **Providers** - ensure Email provider is enabled
-- Verify email templates are configured
-- Check Supabase logs in **Logs** > **Auth Logs**
-
-### Resend Emails Not Sending
-
-- Verify API key is correct
-- Check Resend dashboard **Logs** for errors
-- Ensure FROM email domain is verified (for production)
-- Check rate limits on free tier
-
-### Database Errors
-
-- Run SQL commands again in correct order
-- Check **Database** > **Logs** for specific errors
-- Verify RLS policies are correct
-
-## Additional Resources
-
-- [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
-- [Resend Documentation](https://resend.com/docs)
-- [Next.js App Router](https://nextjs.org/docs/app)
+1. `npm run dev`
+2. Sign in at `/auth/signin`; the link should arrive from `noreply@lactivae.com`
+   within seconds
+3. The first sign-in creates a profile with role `reviewer`
+4. Promote yourself with the SQL in section 2, then hard-refresh
+5. The X-ray pill appears bottom-left; `/admin` opens
+6. Save a draft at `/admin/claims/hero-asthma-42/propose`, then run
+   `supabase/tests/verify-proposal-roundtrip.sql`
