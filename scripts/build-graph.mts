@@ -16,6 +16,11 @@
  *   data-component="name"             component boundary; usages attach to the
  *                                     most recent boundary above them in the file
  *
+ * One page is registered by hand rather than scanned: /assessment picks its
+ * governed objects by id in TypeScript, so no tag appears in the source. It
+ * declares its surface in src/data/governed/assessment-surface.ts, which the
+ * assessment itself also imports, so the graph cannot fall behind the page.
+ *
  * Exit code 1 on: unapproved objects in use, dangling reference keys, or
  * evidence-type claims with no references.
  */
@@ -28,6 +33,7 @@ import { execSync } from "node:child_process";
 import { claims, EVIDENCE_TYPES } from "../src/data/claims.ts";
 import { safetyObjects } from "../src/data/safety.ts";
 import { references } from "../src/data/references.ts";
+import { assessmentSurface } from "../src/data/governed/assessment-surface.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = resolve(ROOT, "src/generated/graph.json");
@@ -164,6 +170,29 @@ for (const file of files) {
   }
   looseRefsByPage[routeKey] = loose;
   if (loose === 0 && usages.some((u) => u.kind === "claim" || u.kind === "safety")) pagesConverted.push(routeKey);
+}
+
+// ----------------------------------------------------- the personal assessment
+// Selected in code, not rendered as tags, so the scan above finds nothing here.
+// Registering it from the same manifest the assessment imports keeps blast
+// radius honest for the one page that produces a document people act on.
+{
+  const pageId = "page:/assessment";
+  const compId = "component:/assessment#PersonalAssessment";
+  addNode({ id: pageId, kind: "page", label: "assessment", route: "/assessment", file: "src/app/assessment/page.tsx" });
+  addNode({ id: compId, kind: "component", label: "PersonalAssessment", page: pageId, file: "src/lib/assessment.ts" });
+  addEdge({ from: pageId, to: compId, rel: "contains" });
+  let order = 0;
+  for (const id of assessmentSurface.safety) {
+    if (!safetyById.has(id)) throw new Error(`assessment surface names unknown safety object "${id}"`);
+    addEdge({ from: compId, to: `safety:${id}`, rel: "contains", order: (order += 1) });
+  }
+  for (const id of assessmentSurface.claims) {
+    if (!claimById.has(id)) throw new Error(`assessment surface names unknown claim "${id}"`);
+    addEdge({ from: compId, to: `claim:${id}`, rel: "contains", order: (order += 1) });
+  }
+  looseRefsByPage["/assessment"] = 0;
+  pagesConverted.push("/assessment");
 }
 
 // -------------------------------------------------------------------- checks

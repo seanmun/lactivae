@@ -53,3 +53,14 @@ body[data-xray-phase="board"] [data-component] {
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+/* ---- printing the assessment as a doctor discussion guide ---- */
+@media print {
+  header, footer, .no-print,
+  [data-speed-dial], [data-xray-ui], [data-component="ISI"] { display: none !important; }
+  body { padding-bottom: 0 !important; background: #fff !important; }
+  a[href^="/references"]::after { content: ""; }
+  h1, h2 { break-after: avoid-page; }
+  li, p { break-inside: avoid-page; }
+  @page { margin: 18mm; }
+}

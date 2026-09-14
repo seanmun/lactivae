@@ -176,6 +176,18 @@ export default function Header() {
             Nutritional Data
           </Link>
           <Link
+            href="/assessment"
+            className={css({
+              fontFamily: "body",
+              fontSize: "base",
+              color: "text.secondary",
+              textDecoration: "none",
+              _hover: { color: "accent.secondary" },
+            })}
+          >
+            Is It Right For You?
+          </Link>
+          <Link
             href="/patients"
             className={css({
               fontFamily: "body",
@@ -315,6 +327,20 @@ export default function Header() {
               })}
             >
               Nutritional Data
+            </Link>
+            <Link
+              href="/assessment"
+              onClick={() => setIsMenuOpen(false)}
+              className={css({
+                fontFamily: "body",
+                fontSize: "base",
+                color: "text.secondary",
+                textDecoration: "none",
+                padding: "0.5rem",
+                _hover: { color: "accent.secondary" },
+              })}
+            >
+              Is It Right For You?
             </Link>
             <Link
               href="/patients"
