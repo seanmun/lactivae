@@ -35,6 +35,7 @@ interface ProposalRow {
 interface AuditRow {
   id: number;
   actor: string | null;
+  actor_email: string | null;
   action: string;
   object_kind: AuditEvent["objectKind"] | null;
   object_id: string | null;
@@ -70,6 +71,7 @@ function toAudit(r: AuditRow): AuditEvent {
   return {
     id: String(r.id),
     actor: r.actor ?? "",
+    actorEmail: r.actor_email,
     action: r.action,
     objectKind: r.object_kind ?? undefined,
     objectId: r.object_id ?? undefined,
@@ -148,6 +150,7 @@ export class SupabaseProposalStore implements ProposalStore {
     const supabase = await createClient();
     const { error } = await supabase.from("audit_events").insert({
       actor: event.actor,
+      actor_email: event.actorEmail ?? null,
       action: event.action,
       object_kind: event.objectKind ?? null,
       object_id: event.objectId ?? null,

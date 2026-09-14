@@ -56,6 +56,8 @@ export interface PublishedOverride {
   refs: unknown;
   safety: unknown;
   published_at: string;
+  /** the signature that authorised this wording */
+  approval_seq: number;
 }
 
 export const fetchedAt = ${JSON.stringify(new Date().toISOString())};
@@ -72,7 +74,7 @@ if (!url || !key) {
   write([], "Supabase not configured; baseline only");
 } else {
   try {
-    const res = await fetch(`${url.replace(/\/$/, "")}/rest/v1/published_claims?select=*&order=object_id`, {
+    const res = await fetch(`${url.replace(/\/$/, "")}/rest/v1/published_claims?select=object_id,version,text,refs,safety,published_at,approval_seq&order=object_id`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
       signal: AbortSignal.timeout(15000),
     });
