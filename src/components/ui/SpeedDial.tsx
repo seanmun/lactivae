@@ -30,9 +30,24 @@ export default function SpeedDial() {
 
   const actions = [
     {
+      // A small A beside a large A: this control changes text size, and the
+      // universal access glyph promised a whole accessibility panel instead.
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM21 9h-6V7h-2v2H7V7H5v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v6c0 1.1.9 2 2 2h2v4h2v-4h2v4h2v-4h2c1.1 0 2-.9 2-2v-6h2c.55 0 1-.45 1-1s-.45-1-1-1z"/>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M1.6 20 5.2 10.6 8.8 20" />
+          <path d="M2.9 16.9h4.6" />
+          <path d="M11.4 20 16.7 4.4 22 20" />
+          <path d="M13.3 14.7h6.8" />
         </svg>
       ),
       label: "Accessibility",

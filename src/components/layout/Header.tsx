@@ -3,12 +3,207 @@
 import Link from "next/link";
 import Image from "next/image";
 import { css } from "../../../styled-system/css";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+
+/**
+ * Two audiences get a top-level link — patients and providers, the two doors
+ * a pharma site is expected to have. Everything else lives behind one menu.
+ *
+ * The nav previously listed five destinations plus auth, which wrapped every
+ * label onto two lines and pushed the wordmark into the first link. Labels are
+ * nowrap now and the logo cannot shrink, so that cannot come back by adding a
+ * page.
+ */
+const MORE_LINKS: { href: string; label: string; hint: string }[] = [
+  { href: "/assessment", label: "Is It Right For You?", hint: "Four questions, a printable guide" },
+  { href: "/studies", label: "Clinical Studies", hint: "The trials and meta-analyses" },
+  { href: "/nutritional-data", label: "Nutritional Data", hint: "Composition, side by side" },
+  { href: "/safety", label: "Safety Information", hint: "Risks and who should not drink it" },
+  { href: "/references", label: "References", hint: "Every source, numbered" },
+  { href: "/about", label: "About", hint: "What this project is" },
+];
+
+const navLink = css({
+  fontFamily: "body",
+  fontSize: "base",
+  color: "text.secondary",
+  textDecoration: "none",
+  whiteSpace: "nowrap",
+  _hover: { color: "accent.secondary" },
+  _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "3px", borderRadius: "3px" },
+});
+
+const menuItem = css({
+  display: "block",
+  padding: "0.5rem 0.75rem",
+  borderRadius: "6px",
+  textDecoration: "none",
+  _hover: { bg: "bg.secondary" },
+  _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "-2px" },
+});
+
+const menuItemActive = css({
+  display: "block",
+  padding: "0.5rem 0.75rem",
+  borderRadius: "6px",
+  textDecoration: "none",
+  bg: "bg.secondary",
+  _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "-2px" },
+});
+
+const menuLabel = css({
+  fontFamily: "body",
+  fontSize: "base",
+  fontWeight: "500",
+  color: "text.primary",
+  display: "block",
+  whiteSpace: "nowrap",
+});
+
+const menuHint = css({
+  fontFamily: "body",
+  fontSize: "xs",
+  color: "text.muted",
+  display: "block",
+  marginTop: "0.1rem",
+  whiteSpace: "nowrap",
+});
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={css({ transition: "transform 0.18s ease-out", flexShrink: 0 })}
+      style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+/** The catch-all menu. Opens on click or hover, closes on Escape, outside click, or navigation. */
+function MoreMenu({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holds = MORE_LINKS.some((l) => l.href === pathname);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!wrap.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        wrap.current?.querySelector("button")?.focus();
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  // Hover is a convenience for mice; the click target is what actually matters,
+  // so a small delay keeps the menu from vanishing when the pointer cuts a corner.
+  const hoverOpen = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const hoverClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpen(false), 140);
+  };
+
+  return (
+    <div
+      ref={wrap}
+      onMouseEnter={hoverOpen}
+      onMouseLeave={hoverClose}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false);
+      }}
+      className={css({ position: "relative", display: "flex", alignItems: "center" })}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="true"
+        className={css({
+          fontFamily: "body",
+          fontSize: "base",
+          color: "text.secondary",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.3rem",
+          whiteSpace: "nowrap",
+          _hover: { color: "accent.secondary" },
+          _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "3px", borderRadius: "3px" },
+        })}
+        style={holds ? { color: "var(--colors-accent-secondary)" } : undefined}
+      >
+        More
+        <Chevron open={open} />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className={css({
+            position: "absolute",
+            top: "calc(100% + 0.85rem)",
+            right: 0,
+            minWidth: "16rem",
+            bg: "bg.primary",
+            border: "1px solid",
+            borderColor: "border.light",
+            borderRadius: "10px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.12)",
+            padding: "0.4rem",
+            zIndex: 60,
+          })}
+        >
+          {MORE_LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              aria-current={pathname === l.href ? "page" : undefined}
+              className={pathname === l.href ? menuItemActive : menuItem}
+            >
+              <span className={menuLabel}>{l.label}</span>
+              <span className={menuHint}>{l.hint}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { session } = useSession();
+  const pathname = usePathname() ?? "/";
   const signedIn = Boolean(session);
   // Signed-in visitors see who they are: the local part of their email, kept
   // short so a long address cannot push the nav around.
@@ -34,10 +229,15 @@ export default function Header() {
         className={css({
           maxWidth: "1200px",
           margin: "0 auto",
+          // The speed dial is fixed to the top-right corner of the viewport and
+          // sat on top of the Register button below 1280px, where the nav runs
+          // to the edge. Reserve the corner until there is slack again.
           padding: "1rem 2rem",
+          paddingRight: { base: "2rem", lg: "4.75rem", xl: "2rem" },
           display: "flex",
           alignItems: "center",
-          justifyContent: { base: "center", md: "space-between" },
+          justifyContent: { base: "center", lg: "space-between" },
+          gap: "1rem",
           position: "relative",
         })}
       >
@@ -45,7 +245,7 @@ export default function Header() {
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={css({
-            display: { base: "block", md: "none" },
+            display: { base: "block", lg: "none" },
             position: "absolute",
             left: "1rem",
             padding: "0.5rem",
@@ -55,6 +255,7 @@ export default function Header() {
             border: "none",
           })}
           aria-label="Toggle menu"
+          aria-expanded={isMenuOpen}
         >
           <svg
             width="24"
@@ -88,8 +289,9 @@ export default function Header() {
           className={css({
             display: "flex",
             alignItems: "center",
-            gap: { base: "0.55rem", md: "0.7rem" },
+            gap: { base: "0.55rem", lg: "0.7rem" },
             textDecoration: "none",
+            flexShrink: 0,
             _hover: { "& [data-wordmark]": { color: "accent.secondary" } },
             _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "4px", borderRadius: "4px" },
           })}
@@ -104,7 +306,7 @@ export default function Header() {
             className={css({
               display: "block",
               width: "auto",
-              height: { base: "34px", md: "42px" },
+              height: { base: "34px", lg: "42px" },
               flexShrink: 0,
             })}
           />
@@ -117,6 +319,7 @@ export default function Header() {
                 fontWeight: "700",
                 color: "accent.primary",
                 display: "block",
+                whiteSpace: "nowrap",
                 transition: "color 0.2s ease-out",
               })}
             >
@@ -131,6 +334,7 @@ export default function Header() {
                 color: "text.muted",
                 marginTop: "0.125rem",
                 lineHeight: "1",
+                whiteSpace: "nowrap",
                 letterSpacing: "-0.01em",
               })}
             >
@@ -139,93 +343,26 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation: the two audiences, then everything else */}
         <div
           className={css({
-            display: { base: "none", md: "flex" },
-            gap: "2rem",
+            display: { base: "none", lg: "flex" },
+            gap: { lg: "1.5rem", xl: "1.75rem" },
             alignItems: "center",
+            flexShrink: 0,
           })}
         >
-          <Link
-            href="/studies"
-            className={css({
-              fontFamily: "body",
-              fontSize: "base",
-              color: "text.secondary",
-              textDecoration: "none",
-              _hover: {
-                color: "accent.secondary",
-              },
-            })}
-          >
-            Clinical Studies
-          </Link>
-          <Link
-            href="/nutritional-data"
-            className={css({
-              fontFamily: "body",
-              fontSize: "base",
-              color: "text.secondary",
-              textDecoration: "none",
-              _hover: {
-                color: "accent.secondary",
-              },
-            })}
-          >
-            Nutritional Data
-          </Link>
-          <Link
-            href="/assessment"
-            className={css({
-              fontFamily: "body",
-              fontSize: "base",
-              color: "text.secondary",
-              textDecoration: "none",
-              _hover: { color: "accent.secondary" },
-            })}
-          >
-            Is It Right For You?
-          </Link>
-          <Link
-            href="/patients"
-            className={css({
-              fontFamily: "body",
-              fontSize: "base",
-              color: "text.secondary",
-              textDecoration: "none",
-              _hover: {
-                color: "accent.secondary",
-              },
-            })}
-          >
+          <Link href="/patients" aria-current={pathname === "/patients" ? "page" : undefined} className={navLink}>
             For Patients
           </Link>
-          <Link
-            href="/providers"
-            className={css({
-              fontFamily: "body",
-              fontSize: "base",
-              color: "text.secondary",
-              textDecoration: "none",
-              _hover: {
-                color: "accent.secondary",
-              },
-            })}
-          >
+          <Link href="/providers" aria-current={pathname === "/providers" ? "page" : undefined} className={navLink}>
             For Providers
           </Link>
+
+          <MoreMenu pathname={pathname} />
+
           {!signedIn && (
-            <Link
-              href="/auth/signin"
-              className={css({
-                fontFamily: "body",
-                fontSize: "base",
-                color: "text.secondary",
-                textDecoration: "none",
-                _hover: { color: "accent.secondary" },
-              })}
-            >
+            <Link href="/auth/signin" className={navLink}>
               Sign in
             </Link>
           )}
@@ -245,10 +382,13 @@ export default function Header() {
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
               _hover: {
                 bg: "accent.secondary",
                 transform: "translateY(-1px)",
               },
+              _focusVisible: { outline: "2px solid", outlineColor: "accent.secondary", outlineOffset: "3px" },
             })}
           >
             <svg
@@ -278,82 +418,31 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu — no dropdown, there is room to list everything */}
       {isMenuOpen && (
         <div
           className={css({
-            display: { base: "block", md: "none" },
+            display: { base: "block", lg: "none" },
             bg: "bg.secondary",
             borderTop: "1px solid",
             borderColor: "border.light",
             padding: "1rem",
           })}
         >
-          <div
-            className={css({
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-            })}
-          >
-            <Link
-              href="/studies"
-              onClick={() => setIsMenuOpen(false)}
-              className={css({
-                fontFamily: "body",
-                fontSize: "base",
-                color: "text.secondary",
-                textDecoration: "none",
-                padding: "0.5rem",
-                _hover: {
-                  color: "accent.secondary",
-                },
-              })}
-            >
-              Clinical Studies
-            </Link>
-            <Link
-              href="/nutritional-data"
-              onClick={() => setIsMenuOpen(false)}
-              className={css({
-                fontFamily: "body",
-                fontSize: "base",
-                color: "text.secondary",
-                textDecoration: "none",
-                padding: "0.5rem",
-                _hover: {
-                  color: "accent.secondary",
-                },
-              })}
-            >
-              Nutritional Data
-            </Link>
-            <Link
-              href="/assessment"
-              onClick={() => setIsMenuOpen(false)}
-              className={css({
-                fontFamily: "body",
-                fontSize: "base",
-                color: "text.secondary",
-                textDecoration: "none",
-                padding: "0.5rem",
-                _hover: { color: "accent.secondary" },
-              })}
-            >
-              Is It Right For You?
-            </Link>
+          <div className={css({ display: "flex", flexDirection: "column", gap: "0.25rem" })}>
             <Link
               href="/patients"
               onClick={() => setIsMenuOpen(false)}
+              aria-current={pathname === "/patients" ? "page" : undefined}
               className={css({
                 fontFamily: "body",
                 fontSize: "base",
-                color: "text.secondary",
+                fontWeight: "500",
+                color: "text.primary",
                 textDecoration: "none",
-                padding: "0.5rem",
-                _hover: {
-                  color: "accent.secondary",
-                },
+                padding: "0.6rem 0.5rem",
+                borderRadius: "6px",
+                _hover: { color: "accent.secondary" },
               })}
             >
               For Patients
@@ -361,19 +450,58 @@ export default function Header() {
             <Link
               href="/providers"
               onClick={() => setIsMenuOpen(false)}
+              aria-current={pathname === "/providers" ? "page" : undefined}
               className={css({
                 fontFamily: "body",
                 fontSize: "base",
-                color: "text.secondary",
+                fontWeight: "500",
+                color: "text.primary",
                 textDecoration: "none",
-                padding: "0.5rem",
-                _hover: {
-                  color: "accent.secondary",
-                },
+                padding: "0.6rem 0.5rem",
+                borderRadius: "6px",
+                _hover: { color: "accent.secondary" },
               })}
             >
               For Providers
             </Link>
+
+            <p
+              className={css({
+                fontFamily: "body",
+                fontSize: "xs",
+                fontWeight: "600",
+                color: "text.muted",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                padding: "0.9rem 0.5rem 0.35rem",
+                borderTop: "1px solid",
+                borderColor: "border.light",
+                marginTop: "0.5rem",
+              })}
+            >
+              More
+            </p>
+
+            {MORE_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setIsMenuOpen(false)}
+                aria-current={pathname === l.href ? "page" : undefined}
+                className={css({
+                  fontFamily: "body",
+                  fontSize: "base",
+                  color: "text.secondary",
+                  textDecoration: "none",
+                  padding: "0.6rem 0.5rem",
+                  borderRadius: "6px",
+                  _hover: { color: "accent.secondary" },
+                })}
+              >
+                {l.label}
+              </Link>
+            ))}
+
             {!signedIn && (
               <Link
                 href="/auth/signin"
@@ -383,7 +511,12 @@ export default function Header() {
                   fontSize: "base",
                   color: "text.secondary",
                   textDecoration: "none",
-                  padding: "0.5rem",
+                  padding: "0.6rem 0.5rem",
+                  borderRadius: "6px",
+                  borderTop: "1px solid",
+                  borderColor: "border.light",
+                  marginTop: "0.5rem",
+                  paddingTop: "0.9rem",
                   _hover: { color: "accent.secondary" },
                 })}
               >
@@ -403,14 +536,12 @@ export default function Header() {
                 color: "bg.primary",
                 borderRadius: "6px",
                 textDecoration: "none",
-                marginTop: "0.5rem",
+                marginTop: "0.75rem",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "0.5rem",
-                _hover: {
-                  bg: "accent.secondary",
-                },
+                _hover: { bg: "accent.secondary" },
               })}
             >
               <svg
