@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "prepare": "panda codegen",
+    "published": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-published.mts",
     "graph": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-graph.mts",
     "index": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/index-references.mts",
-    "prebuild": "npm run graph",
-    "predev": "npm run graph",
+    "prebuild": "npm run published && npm run graph",
+    "predev": "npm run published && npm run graph",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

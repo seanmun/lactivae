@@ -23,11 +23,35 @@ import { studiesClaims } from "./governed/studies.ts";
 import { surveillanceClaims } from "./governed/surveillance.ts";
 import { pageClaims } from "./governed/pages.ts";
 import { suggestedClaims } from "./governed/suggested.ts";
+import { overrides } from "../generated/published-overrides.ts";
 
 export type { Claim, ClaimRef, ClaimStatus, ClaimType } from "./claim-types";
 export { EVIDENCE_TYPES } from "./claim-types.ts";
 
-export const claims: Claim[] = [...homeClaims, ...comparisonClaims, ...studiesClaims, ...surveillanceClaims, ...pageClaims, ...suggestedClaims];
+const baseline: Claim[] = [...homeClaims, ...comparisonClaims, ...studiesClaims, ...surveillanceClaims, ...pageClaims, ...suggestedClaims];
+
+/**
+ * Published overrides. The registries above are version 1 of every claim;
+ * anything approved and signed since then is fetched from Supabase at build
+ * time (scripts/fetch-published.mts) and merged here, so promoting a change
+ * needs no code edit. The signature chain in the database is the record of
+ * who approved each one.
+ */
+export const claims: Claim[] = baseline.map((c) => {
+  const o = overrides.find((x) => x.object_id === c.id);
+  if (!o) return c;
+  return {
+    ...c,
+    text: o.text,
+    refs: (o.refs as Claim["refs"]) ?? c.refs,
+    safety: (o.safety as string[]) ?? c.safety,
+    version: o.version,
+    effectiveFrom: o.published_at.slice(0, 10),
+  };
+});
+
+/** Which claims are running published wording rather than the baseline */
+export const publishedIds: string[] = overrides.map((o) => o.object_id);
 
 const byId = new Map<string, Claim>();
 for (const c of claims) {

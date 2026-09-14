@@ -43,6 +43,7 @@ docs/
 # Generated regulatory graph (built in prebuild)
 src/generated/graph.json
 src/generated/build-info.json
+src/generated/published-overrides.ts
 
 # Local proposal store (dev bypass only)
 .rxweb/

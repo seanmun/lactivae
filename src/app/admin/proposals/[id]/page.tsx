@@ -91,7 +91,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ id: s
       <BlastPanel radius={radius} />
 
       <h2 className={h2}>Lifecycle</h2>
-      <ProposalActions proposalId={proposal.id} status={proposal.status} allowed={TRANSITIONS[proposal.status]} blocking={blocking} stale={stale} hasPatch={patch !== null} canWrite={canWrite} />
+      <ProposalActions proposalId={proposal.id} status={proposal.status} allowed={TRANSITIONS[proposal.status]} blocking={blocking} stale={stale} hasPatch={patch !== null} canWrite={canWrite} objectLabel={title} />
 
       {patch && (
         <>
